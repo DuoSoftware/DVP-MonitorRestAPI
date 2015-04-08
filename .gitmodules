@@ -1,0 +1,6 @@
+[submodule "DVP-DBModels"]
+	path = DVP-DBModels
+	url = https://github.com/DuoSoftware/DVP-DBModels.git
+[submodule "DVP-Common"]
+	path = DVP-Common
+	url = https://github.com/DuoSoftware/DVP-Common.git

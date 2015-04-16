@@ -1,5 +1,21 @@
 var dbModel = require('./DVP-DBModels');
 
+var GetConferenceRoomWithCompany = function(roomName, companyId, tenantId, callback)
+{
+    try
+    {
+        dbModel.Conference.find({where: [{CompanyId: companyId},{TenantId: tenantId},{ConferenceName: roomName}]})
+            .complete(function (err, conf)
+            {
+                callback(err, conf);
+            });
+    }
+    catch(ex)
+    {
+        callback(ex, undefined);
+    }
+}
+
 var GetDomainByCompany = function(companyId, tenantId, callback)
 {
     try
@@ -23,4 +39,22 @@ var GetDomainByCompany = function(companyId, tenantId, callback)
     }
 };
 
+var GetConferenceListByCompany = function(companyId, tenantId, callback)
+{
+    try
+    {
+        dbModel.Conference.findAll({where: [{CompanyId: companyId},{TenantId: tenantId}]})
+            .complete(function (err, confArr)
+            {
+                callback(err, confArr);
+            });
+    }
+    catch(ex)
+    {
+        callback(ex, undefined);
+    }
+};
+
 module.exports.GetDomainByCompany = GetDomainByCompany;
+module.exports.GetConferenceListByCompany = GetConferenceListByCompany;
+module.exports.GetConferenceRoomWithCompany = GetConferenceRoomWithCompany;

@@ -101,6 +101,149 @@ var AddToArray = function(userTags, userList, callback)
     }
 };
 
+var AddToConferenceDetailArray = function(confNameTags, confDetailList, callback)
+{
+    try
+    {
+        var len = confNameTags.length;
+        var count = 0;
+
+        if(count < len)
+        {
+            confNameTags.forEach(function(tag)
+            {
+                redisHandler.GetObject('ConferenceNameMap_' + tag, function(err, confId)
+                {
+                    if(count < len)
+                    {
+                        if (!err && confId)
+                        {
+                            redisHandler.GetFromHash(confId, function(err, hashObj)
+                            {
+                                if(!err && hashObj)
+                                {
+                                    var conferenceData =
+                                    {
+                                        ConferenceId: confId,
+                                        ConferenceName: tag,
+                                        Data: JSON.parse(hashObj['Data'])
+                                    };
+
+                                    confDetailList.push(conferenceData);
+
+                                    count++;
+
+                                    if (count >= len) {
+                                        callback(err, confDetailList);
+                                    }
+                                }
+                                else
+                                {
+                                    count++;
+
+                                    if (count >= len) {
+                                        callback(err, confDetailList);
+                                    }
+                                }
+                            })
+
+                        }
+                        else
+                        {
+                            count++;
+
+                            if (count >= len) {
+                                callback(err, confDetailList);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        callback(err, confDetailList);
+                    }
+                })
+
+            });
+        }
+        else
+        {
+            callback(undefined, confDetailList);
+        }
+
+    }
+    catch(ex)
+    {
+        callback(ex, confDetailList);
+    }
+};
+
+var AddToConferenceUserArray = function(confId, confUserTags, confUserList, callback)
+{
+    try
+    {
+        var len = confUserTags.length;
+        var count = 0;
+
+        if(count < len)
+        {
+            confUserTags.forEach(function(tag)
+            {
+                var userHash = "Conference-User-" + confId + "-" + tag;
+
+                if (count < len)
+                {
+                    redisHandler.GetFromHash(userHash, function (err, hashObj)
+                    {
+                        if (!err && hashObj)
+                        {
+                            var userData =
+                            {
+                                Username: hashObj['Caller-Username'],
+                                UserType: hashObj['Member-Type'],
+                                UserState: hashObj['Member-State']
+                            };
+
+                            confUserList.push(userData);
+
+                            count++;
+
+                            if (count >= len)
+                            {
+                                callback(err, confUserList);
+                            }
+                        }
+                        else
+                        {
+                            count++;
+
+                            if (count >= len)
+                            {
+                                callback(err, confUserList);
+                            }
+                        }
+                    })
+
+                }
+                else
+                {
+                    callback(undefined, confUserList);
+                }
+
+
+            });
+        }
+        else
+        {
+            callback(undefined, confUserList);
+        }
+
+    }
+    catch(ex)
+    {
+        callback(ex, confUserList);
+    }
+};
+
 server.get('/DVP/API/:version/MonitorRestAPI/GetSipRegDetailsByCompany/:companyId/:tenantId', function(req, res, next)
 {
     try
@@ -321,6 +464,153 @@ server.get('/DVP/API/:version/MonitorRestAPI/GetChannelsByCompany/:companyId/:te
 
                 res.end(jsonString);
             }
+        });
+
+        return next();
+    }
+    catch(ex)
+    {
+        var jsonString = messageFormatter.FormatMessage(ex, "ERROR", false, undefined);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+server.get('/DVP/API/:version/MonitorRestAPI/GetConferenceRoomsByCompany/:companyId/:tenantId', function(req, res, next)
+{
+    try
+    {
+        var companyId = req.params.companyId;
+        var tenantId = req.params.tenantId;
+
+        dbHandler.GetConferenceListByCompany(companyId, tenantId, function (err, confList)
+        {
+            if(err)
+            {
+                res.end('{}');
+            }
+            else
+            {
+                if (confList && confList.length > 0)
+                {
+                    //Get Registration Details From Redis
+                    var tagList = [];
+                    var confDetailList = [];
+
+                    confList.forEach(function(conf)
+                    {
+                        var tag = conf.ConferenceName;
+                        tagList.push(tag);
+                    });
+
+                    AddToConferenceDetailArray(tagList, confDetailList, function(err, confList)
+                    {
+                        if(err)
+                        {
+                            res.end('{}');
+                        }
+                        else
+                        {
+                            var jsonString = JSON.stringify(confList);
+
+                            res.end(jsonString);
+                        }
+                    })
+
+                }
+                else
+                {
+                    res.end('{}');
+                }
+            }
+
+        });
+
+
+        return next();
+    }
+    catch(ex)
+    {
+        var jsonString = messageFormatter.FormatMessage(ex, "ERROR", false, undefined);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+server.get('/DVP/API/:version/MonitorRestAPI/GetConferenceUsers/:roomName/:companyId/:tenantId', function(req, res, next)
+{
+    try
+    {
+        var roomName = req.params.roomName;
+        var companyId = req.params.companyId;
+        var tenantId = req.params.tenantId;
+
+        var confUserList = [];
+
+        dbHandler.GetConferenceRoomWithCompany(roomName, companyId, tenantId, function (err, conf)
+        {
+            if(err)
+            {
+                var jsonString = JSON.stringify(confUserList);
+                res.end(jsonString);
+            }
+            else
+            {
+                if (conf)
+                {
+                    //Get Registration Details From Redis
+                    redisHandler.GetObject('ConferenceNameMap_' + roomName, function(err, confId)
+                    {
+                       if(!err && confId)
+                       {
+                           redisHandler.GetFromSet('Conference-Member-List-' + confId, function(err, usersArr)
+                           {
+                               if(!err && usersArr && usersArr.length > 0)
+                               {
+
+                                   AddToConferenceUserArray(confId, usersArr, confUserList, function(err, usrList)
+                                   {
+                                       if(!err && usrList)
+                                       {
+                                           var jsonString = JSON.stringify(usrList);
+                                           res.end(jsonString);
+                                       }
+                                       else
+                                       {
+                                           var jsonString = JSON.stringify(confUserList);
+                                           res.end(jsonString);
+                                       }
+                                   })
+
+
+                               }
+                               else
+                               {
+                                   var jsonString = JSON.stringify(confUserList);
+                                   res.end(jsonString);
+                               }
+
+                           })
+                       }
+                       else
+                       {
+                           var jsonString = JSON.stringify(confUserList);
+                           res.end(jsonString);
+                       }
+                    });
+
+                }
+                else
+                {
+                    var jsonString = JSON.stringify(confUserList);
+                    res.end(jsonString);
+                }
+            }
+
         });
 
         return next();

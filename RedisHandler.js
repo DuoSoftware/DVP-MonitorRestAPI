@@ -25,6 +25,24 @@ var SetObject = function(key, value, callback)
 
 };
 
+var GetObject = function(key, callback)
+{
+    try
+    {
+        //var client = redis.createClient(redisPort, redisIp);
+
+        client.get(key, function(err, response)
+        {
+            callback(err, response);
+        });
+
+    }
+    catch(ex)
+    {
+        callback(ex, undefined);
+    }
+};
+
 var PublishToRedis = function(pattern, message, callback)
 {
     try
@@ -97,3 +115,4 @@ module.exports.SetObject = SetObject;
 module.exports.PublishToRedis = PublishToRedis;
 module.exports.GetFromSet = GetFromSet;
 module.exports.GetFromHash = GetFromHash;
+module.exports.GetObject = GetObject;

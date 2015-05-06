@@ -1,8 +1,13 @@
 var restify = require('restify');
 var stringify = require('stringify');
+var config = require('config');
 var dbHandler = require('./DBBackendHandler.js');
 var redisHandler = require('./RedisHandler.js');
-var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
+var messageFormatter = require('DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
+
+var hostIp = config.Host.Ip;
+var hostPort = config.Host.Port;
+var hostVersion = config.Host.Version;
 
 var server = restify.createServer({
     name: 'localhost',
@@ -98,6 +103,50 @@ var AddToArray = function(userTags, userList, callback)
     catch(ex)
     {
         callback(ex, userList);
+    }
+};
+
+var AddToInstanceInfoArray = function(callServerList, callback)
+{
+    var instanceInfoList = [];
+    try
+    {
+        var len = callServerList.length;
+        var count = 0;
+
+        callServerList.forEach(function(cs)
+        {
+            var csId = cs.id;
+            redisHandler.GetObject(csId + '#DVP_CS_INSTANCE_INFO', function(err, instanceInfo)
+            {
+                if(count < len)
+                {
+                    if(instanceInfo)
+                    {
+                        var instanceInfoObj = JSON.parse(instanceInfo);
+
+                        instanceInfoList.push(instanceInfoObj);
+                    }
+
+                    count++;
+
+                    if(count >= len)
+                    {
+                        callback(err, instanceInfoList);
+                    }
+
+                }
+                else
+                {
+                    callback(err, instanceInfoList);
+                }
+            })
+
+        });
+    }
+    catch(ex)
+    {
+        callback(ex, instanceInfoList);
     }
 };
 
@@ -244,7 +293,7 @@ var AddToConferenceUserArray = function(confId, confUserTags, confUserList, call
     }
 };
 
-server.get('/DVP/API/:version/MonitorRestAPI/GetSipRegDetailsByCompany/:companyId/:tenantId', function(req, res, next)
+server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetSipRegDetailsByCompany/:companyId/:tenantId', function(req, res, next)
 {
     try
     {
@@ -306,7 +355,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/GetSipRegDetailsByCompany/:companyI
 
 });
 
-server.get('/DVP/API/:version/MonitorRestAPI/GetSipRegDetailsByUser/:user/:companyId/:tenantId', function(req, res, next)
+server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetSipRegDetailsByUser/:user/:companyId/:tenantId', function(req, res, next)
 {
     try
     {
@@ -365,46 +414,192 @@ server.get('/DVP/API/:version/MonitorRestAPI/GetSipRegDetailsByUser/:user/:compa
 
 });
 
-server.get('/DVP/API/:version/MonitorRestAPI/GetChannelById/:channelId', function(req, res, next)
+server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetCallsCount/:instanceId', function(req, res, next)
+{
+    try
+    {
+        var instanceId = req.params.instanceId;
+
+        var callCountKey = instanceId + '#DVP_CALL_COUNT';
+
+        redisHandler.GetObject(callCountKey, function (err, callCount)
+        {
+            if (err)
+            {
+                res.end('{}');
+            }
+            else
+            {
+                res.end(callCount);
+            }
+
+
+        });
+    }
+    catch(ex)
+    {
+        res.end('{}');
+    }
+
+    return next();
+
+});
+
+server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetInstanceResourceUtilization/:instanceId', function(req, res, next)
+{
+    try
+    {
+        var instanceId = req.params.instanceId;
+
+        var instanceInfoKey = instanceId + '##DVP_CS_INSTANCE_INFO';
+
+        redisHandler.GetObject(instanceInfoKey, function (err, instanceInf)
+        {
+            if (err)
+            {
+                res.end('{}');
+            }
+            else
+            {
+                res.end(JSON.stringify(instanceInf));
+            }
+
+        });
+    }
+    catch(ex)
+    {
+        res.end('{}');
+    }
+
+    return next();
+
+});
+
+server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetClusterResourceUtilization/:clusterId', function(req, res, next)
+{
+    try
+    {
+        var clusterId = req.params.clusterId;
+
+        var emptyArr = [];
+
+        dbHandler.GetCallServersForCluster(clusterId, function(err, result)
+        {
+            if(err || !result)
+            {
+                var jsonStr = JSON.stringify(emptyArr);
+
+                res.end(jsonStr);
+            }
+            else
+            {
+                if(result.CallServer && result.CallServer.length > 0)
+                {
+                    AddToInstanceInfoArray(result.CallServer, function(err, infoList)
+                    {
+                        var jsonStr = JSON.stringify(infoList);
+
+                        res.end(jsonStr);
+                    })
+                }
+                else
+                {
+                    var jsonStr = JSON.stringify(emptyArr);
+
+                    res.end(jsonStr);
+                }
+            }
+        });
+
+        var instanceInfoKey = instanceId + '##DVP_CS_INSTANCE_INFO';
+
+        redisHandler.GetObject(instanceInfoKey, function (err, instanceInf)
+        {
+            if (err)
+            {
+                res.end('{}');
+            }
+            else
+            {
+                res.end(JSON.stringify(instanceInf));
+            }
+
+        });
+    }
+    catch(ex)
+    {
+        res.end('{}');
+    }
+
+    return next();
+
+});
+
+server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelCount/:instanceId', function(req, res, next)
+{
+    try
+    {
+        var instanceId = req.params.instanceId;
+
+        var channelCountKey = instanceId + '#DVP_CHANNEL_COUNT';
+
+        redisHandler.GetObject(channelCountKey, function (err, chanCount)
+        {
+            if (err)
+            {
+                res.end('{}');
+            }
+            else
+            {
+                res.end(chanCount);
+            }
+
+        });
+    }
+    catch(ex)
+    {
+        res.end('{}');
+    }
+
+    return next();
+
+});
+
+server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelById/:channelId', function(req, res, next)
 {
     try
     {
         var channelId = req.params.channelId;
 
 
-                //Get Registration Details From Redis
+        //Get Registration Details From Redis
 
-                redisHandler.GetFromHash(channelId, function (err, hashObj)
+        redisHandler.GetFromHash(channelId, function (err, hashObj)
+        {
+            if (err)
+            {
+                res.end('{}');
+            }
+            else
+            {
+                var channelData =
                 {
-                    if (err)
-                    {
-                        res.end('{}');
-                    }
-                    else
-                    {
-                        var channelData =
-                        {
-                            ChannelState: hashObj["Channel-State"],
-                            FreeSwitchName: hashObj["FreeSWITCH-Switchname"],
-                            ChannelName: hashObj["Channel-Name"],
-                            CallDirection: hashObj["Call-Direction"],
-                            CallerDestinationNumber : hashObj["Caller-Destination-Number"],
-                            OtherLegUuid : hashObj["Other-Leg-Unique-ID"],
-                            CallType : hashObj["Call-Type"]
-                        };
+                    ChannelState: hashObj["Channel-State"],
+                    FreeSwitchName: hashObj["FreeSWITCH-Switchname"],
+                    ChannelName: hashObj["Channel-Name"],
+                    CallDirection: hashObj["Call-Direction"],
+                    CallerDestinationNumber : hashObj["Caller-Destination-Number"],
+                    OtherLegUuid : hashObj["Other-Leg-Unique-ID"],
+                    CallType : hashObj["Call-Type"]
+                };
 
-                        var jsonString = JSON.stringify(channelData);
+                var jsonString = JSON.stringify(channelData);
 
-                        res.end(jsonString);
-                    }
+                res.end(jsonString);
+            }
 
 
-                });
-
-
-
-
-        return next();
+        });
     }
     catch(ex)
     {
@@ -416,7 +611,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/GetChannelById/:channelId', functio
 
 });
 
-server.get('/DVP/API/:version/MonitorRestAPI/GetChannelsByCompany/:companyId/:tenantId', function(req, res, next)
+server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelsByCompany/:companyId/:tenantId', function(req, res, next)
 {
     try
     {
@@ -478,7 +673,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/GetChannelsByCompany/:companyId/:te
 
 });
 
-server.get('/DVP/API/:version/MonitorRestAPI/GetConferenceRoomsByCompany/:companyId/:tenantId', function(req, res, next)
+server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceRoomsByCompany/:companyId/:tenantId', function(req, res, next)
 {
     try
     {
@@ -541,7 +736,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/GetConferenceRoomsByCompany/:compan
 
 });
 
-server.get('/DVP/API/:version/MonitorRestAPI/GetConferenceUsers/:roomName/:companyId/:tenantId', function(req, res, next)
+server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceUsers/:roomName/:companyId/:tenantId', function(req, res, next)
 {
     try
     {
@@ -625,6 +820,6 @@ server.get('/DVP/API/:version/MonitorRestAPI/GetConferenceUsers/:roomName/:compa
 
 });
 
-server.listen(9093, 'localhost', function () {
+server.listen(hostPort, hostIp, function () {
     console.log('%s listening at %s', server.name, server.url);
 });

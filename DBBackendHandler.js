@@ -1,4 +1,4 @@
-var dbModel = require('./DVP-DBModels');
+var dbModel = require('DVP-DBModels');
 
 var GetConferenceRoomWithCompany = function(roomName, companyId, tenantId, callback)
 {
@@ -8,6 +8,22 @@ var GetConferenceRoomWithCompany = function(roomName, companyId, tenantId, callb
             .complete(function (err, conf)
             {
                 callback(err, conf);
+            });
+    }
+    catch(ex)
+    {
+        callback(ex, undefined);
+    }
+};
+
+var GetCallServersForCluster = function(clusterId, callback)
+{
+    try
+    {
+        dbModel.Cloud.find({where: [{id: clusterId}], include: [{model: dbModel.CallServer, as: 'CallServer'}]})
+            .complete(function (err, cloudInfo)
+            {
+                callback(err, cloudInfo);
             });
     }
     catch(ex)
@@ -56,5 +72,6 @@ var GetConferenceListByCompany = function(companyId, tenantId, callback)
 };
 
 module.exports.GetDomainByCompany = GetDomainByCompany;
+module.exports.GetCallServersForCluster = GetCallServersForCluster;
 module.exports.GetConferenceListByCompany = GetConferenceListByCompany;
 module.exports.GetConferenceRoomWithCompany = GetConferenceRoomWithCompany;

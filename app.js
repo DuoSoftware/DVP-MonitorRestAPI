@@ -4,6 +4,8 @@ var config = require('config');
 var dbHandler = require('./DBBackendHandler.js');
 var redisHandler = require('./RedisHandler.js');
 var messageFormatter = require('DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
+var nodeUuid = require('node-uuid');
+var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
 
 var hostIp = config.Host.Ip;
 var hostPort = config.Host.Port;
@@ -18,7 +20,7 @@ server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
 
-var AddToChannelArray = function(chanTags, chanList, callback)
+var AddToChannelArray = function(reqId, chanTags, chanList, callback)
 {
     try
     {
@@ -27,7 +29,7 @@ var AddToChannelArray = function(chanTags, chanList, callback)
 
         chanTags.forEach(function(tag)
         {
-            redisHandler.GetFromHash(tag, function(err, hashObj)
+            redisHandler.GetFromHash(reqId, tag, function(err, hashObj)
             {
                 if(count < len)
                 {
@@ -61,11 +63,11 @@ var AddToChannelArray = function(chanTags, chanList, callback)
     }
     catch(ex)
     {
-        callback(ex, userList);
+        callback(ex, chanList);
     }
 };
 
-var AddToArray = function(userTags, userList, callback)
+var AddToArray = function(reqId, userTags, userList, callback)
 {
     try
     {
@@ -74,7 +76,7 @@ var AddToArray = function(userTags, userList, callback)
 
         userTags.forEach(function(tag)
         {
-                redisHandler.GetFromHash(tag, function(err, hashObj)
+                redisHandler.GetFromHash(reqId, tag, function(err, hashObj)
                 {
                     if(count < len)
                     {
@@ -106,7 +108,7 @@ var AddToArray = function(userTags, userList, callback)
     }
 };
 
-var AddToInstanceInfoArray = function(callServerList, callback)
+var AddToInstanceInfoArray = function(reqId, callServerList, callback)
 {
     var instanceInfoList = [];
     try
@@ -117,7 +119,7 @@ var AddToInstanceInfoArray = function(callServerList, callback)
         callServerList.forEach(function(cs)
         {
             var csId = cs.id;
-            redisHandler.GetObject(csId + '#DVP_CS_INSTANCE_INFO', function(err, instanceInfo)
+            redisHandler.GetObject(reqId, csId + '#DVP_CS_INSTANCE_INFO', function(err, instanceInfo)
             {
                 if(count < len)
                 {
@@ -150,7 +152,7 @@ var AddToInstanceInfoArray = function(callServerList, callback)
     }
 };
 
-var AddToConferenceDetailArray = function(confNameTags, confDetailList, callback)
+var AddToConferenceDetailArray = function(reqId, confNameTags, confDetailList, callback)
 {
     try
     {
@@ -161,13 +163,13 @@ var AddToConferenceDetailArray = function(confNameTags, confDetailList, callback
         {
             confNameTags.forEach(function(tag)
             {
-                redisHandler.GetObject('ConferenceNameMap_' + tag, function(err, confId)
+                redisHandler.GetObject(reqId, 'ConferenceNameMap_' + tag, function(err, confId)
                 {
                     if(count < len)
                     {
                         if (!err && confId)
                         {
-                            redisHandler.GetFromHash(confId, function(err, hashObj)
+                            redisHandler.GetFromHash(reqId, confId, function(err, hashObj)
                             {
                                 if(!err && hashObj)
                                 {
@@ -226,7 +228,7 @@ var AddToConferenceDetailArray = function(confNameTags, confDetailList, callback
     }
 };
 
-var AddToConferenceUserArray = function(confId, confUserTags, confUserList, callback)
+var AddToConferenceUserArray = function(reqId, confId, confUserTags, confUserList, callback)
 {
     try
     {
@@ -241,7 +243,7 @@ var AddToConferenceUserArray = function(confId, confUserTags, confUserList, call
 
                 if (count < len)
                 {
-                    redisHandler.GetFromHash(userHash, function (err, hashObj)
+                    redisHandler.GetFromHash(reqId, userHash, function (err, hashObj)
                     {
                         if (!err && hashObj)
                         {
@@ -295,33 +297,39 @@ var AddToConferenceUserArray = function(confId, confUserTags, confUserList, call
 
 server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetSipRegDetailsByCompany/:companyId/:tenantId', function(req, res, next)
 {
+    var reqId = nodeUuid.v1();
+    var userList = [];
     try
     {
         var companyId = req.params.companyId;
         var tenantId = req.params.tenantId;
 
-        var userList = [];
+        logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - HTTP Request Received', reqId);
 
         dbHandler.GetDomainByCompany(companyId, tenantId, function (err, endUser)
         {
             if(endUser && endUser.Domain)
             {
                 //Get Registration Details From Redis
-                redisHandler.GetFromSet('SIPREG@' + endUser.Domain, function(err, userTags)
+                logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - Trying to get tags for user reg - Key : SIPREG@%s', reqId, endUser.Domain);
+                redisHandler.GetFromSet(reqId, 'SIPREG@' + endUser.Domain, function(err, userTags)
                 {
                     if(userTags && userTags.length > 0)
                     {
                         //get all user hash sets from redis
-                        AddToArray(userTags, userList, function(err, arrRes)
+                        AddToArray(reqId, userTags, userList, function(err, arrRes)
                         {
                             if(err)
                             {
+                                logger.error('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - Exception thrown from method AddToArray', reqId, err);
                                 var jsonStr = JSON.stringify(userList);
+                                logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonStr);
                                 res.end(jsonStr);
                             }
                             else
                             {
                                 var jsonStr = JSON.stringify(arrRes);
+                                logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonStr);
                                 res.end(jsonStr);
                             }
 
@@ -329,7 +337,15 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetSipRegDetailsByCompan
                     }
                     else
                     {
+                        logger.warn('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - No registration tags found on redis', reqId);
+
+                        if(err)
+                        {
+                            logger.error('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - Exception thrown from method redisHandler.GetFromSet', reqId, err);
+                        }
+
                         var jsonString = JSON.stringify(userList);
+                        logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonStr);
                         res.end(jsonString);
                     }
                 });
@@ -337,18 +353,25 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetSipRegDetailsByCompan
             }
             else
             {
+                logger.warn('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - End user or end user domain not found', reqId);
+
+                if(err)
+                {
+                    logger.error('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - Exception thrown from method dbHandler.GetDomainByCompany', reqId, err);
+                }
                 var jsonString = JSON.stringify(userList);
+                logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonStr);
 
                 res.end(jsonString);
             }
         });
-
-        return next();
     }
     catch(ex)
     {
-        var jsonString = messageFormatter.FormatMessage(ex, "ERROR", false, undefined);
-        res.end(jsonString);
+        logger.error('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - Exception occurred', reqId, err);
+        var jsonStr = JSON.stringify(userList);
+        logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonStr);
+        res.end(jsonStr);
     }
 
     return next();
@@ -357,11 +380,14 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetSipRegDetailsByCompan
 
 server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetSipRegDetailsByUser/:user/:companyId/:tenantId', function(req, res, next)
 {
+    var reqId = nodeUuid.v1();
     try
     {
         var user = req.params.user;
         var companyId = req.params.companyId;
         var tenantId = req.params.tenantId;
+
+        logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByUser] - [%s] - HTTP Request Received - Params - User : %s', reqId, user);
 
         dbHandler.GetDomainByCompany(companyId, tenantId, function (err, endUser)
         {
@@ -370,10 +396,13 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetSipRegDetailsByUser/:
                 //Get Registration Details From Redis
                 var tag = 'SIPUSER:' + user + "@" + endUser.Domain;
 
-                redisHandler.GetFromHash(tag, function (err, hashObj)
+                logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByUser] - [%s] - Trying to get user reg hash - Key : %s', reqId, tag);
+
+                redisHandler.GetFromHash(reqId, tag, function (err, hashObj)
                 {
                     if(err)
                     {
+                        logger.error('[DVP-MonitorRestAPI.GetSipRegDetailsByUser] - [%s] - Exception thrown from method redisHandler.GetFromHash', reqId, err);
                         res.end('{}');
                     }
                     else
@@ -387,6 +416,8 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetSipRegDetailsByUser/:
 
                         var jsonString = JSON.stringify(sipUser);
 
+                        logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByUser] - [%s] - API RESPONSE : %s', reqId, jsonString);
+
                         res.end(jsonString);
                     }
 
@@ -397,17 +428,21 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetSipRegDetailsByUser/:
             }
             else
             {
+                logger.warn('[DVP-MonitorRestAPI.GetSipRegDetailsByUser] - [%s] - End user or end user domain not found', reqId);
+
+                if(err)
+                {
+                    logger.error('[DVP-MonitorRestAPI.GetSipRegDetailsByUser] - [%s] - Exception thrown from method dbHandler.GetDomainByCompany', reqId, err);
+                }
+
                 res.end('{}');
             }
         });
-
-
-        return next();
     }
     catch(ex)
     {
-        var jsonString = messageFormatter.FormatMessage(ex, "ERROR", false, undefined);
-        res.end(jsonString);
+        logger.error('[DVP-MonitorRestAPI.GetSipRegDetailsByUser] - [%s] - Exception occurred', reqId, ex);
+        res.end('{}');
     }
 
     return next();
@@ -416,16 +451,21 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetSipRegDetailsByUser/:
 
 server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetCallsCount/:instanceId', function(req, res, next)
 {
+    var reqId = nodeUuid.v1();
     try
     {
         var instanceId = req.params.instanceId;
 
+        logger.debug('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - HTTP Request Received - Params - InstanceId : %s', reqId, instanceId);
+
         var callCountKey = instanceId + '#DVP_CALL_COUNT';
 
-        redisHandler.GetObject(callCountKey, function (err, callCount)
+        logger.debug('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - Trying to get calls count object from redis - Key : %s', reqId, callCountKey);
+        redisHandler.GetObject(reqId, callCountKey, function (err, callCount)
         {
             if (err)
             {
+                logger.error('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - Exception thrown from method redisHandler.GetObject', reqId, err);
                 res.end('{}');
             }
             else
@@ -438,6 +478,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetCallsCount/:instanceI
     }
     catch(ex)
     {
+        logger.error('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - Exception occurred', reqId, ex);
         res.end('{}');
     }
 
@@ -447,27 +488,35 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetCallsCount/:instanceI
 
 server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetInstanceResourceUtilization/:instanceId', function(req, res, next)
 {
+    var reqId = nodeUuid.v1();
     try
     {
         var instanceId = req.params.instanceId;
 
+        logger.debug('[DVP-MonitorRestAPI.GetInstanceResourceUtilization] - [%s] - HTTP Request Received - Params - InstanceId : %s', reqId, instanceId);
+
         var instanceInfoKey = instanceId + '##DVP_CS_INSTANCE_INFO';
 
-        redisHandler.GetObject(instanceInfoKey, function (err, instanceInf)
+        logger.debug('[DVP-MonitorRestAPI.GetInstanceResourceUtilization] - [%s] - Trying to get instance utilization object from redis - Key : %s', reqId, instanceInfoKey);
+        redisHandler.GetObject(reqId, instanceInfoKey, function (err, instanceInf)
         {
             if (err)
             {
+                logger.error('[DVP-MonitorRestAPI.GetInstanceResourceUtilization] - [%s] - Exception thrown from method redisHandler.GetObject', reqId, err);
                 res.end('{}');
             }
             else
             {
-                res.end(JSON.stringify(instanceInf));
+                var jsonStr = JSON.stringify(instanceInf);
+                logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByUser] - [%s] - API RESPONSE : %s', reqId, jsonStr);
+                res.end(jsonStr);
             }
 
         });
     }
     catch(ex)
     {
+        logger.error('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - Exception occurred', reqId, ex);
         res.end('{}');
     }
 
@@ -477,17 +526,24 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetInstanceResourceUtili
 
 server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetClusterResourceUtilization/:clusterId', function(req, res, next)
 {
+    var reqId = nodeUuid.v1();
     try
     {
         var clusterId = req.params.clusterId;
 
+        logger.debug('[DVP-MonitorRestAPI.GetClusterResourceUtilization] - [%s] - HTTP Request Received - Params - clusterId : %s', reqId, clusterId);
+
         var emptyArr = [];
 
-        dbHandler.GetCallServersForCluster(clusterId, function(err, result)
+        logger.debug('[DVP-MonitorRestAPI.GetClusterResourceUtilization] - [%s] - Trying to get servers for cluster from db', reqId);
+
+        dbHandler.GetCallServersForCluster(reqId, clusterId, function(err, result)
         {
             if(err || !result)
             {
                 var jsonStr = JSON.stringify(emptyArr);
+
+                logger.debug('[DVP-MonitorRestAPI.GetClusterResourceUtilization] - [%s] - API RESPONSE : %s', reqId, jsonStr);
 
                 res.end(jsonStr);
             }
@@ -495,9 +551,11 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetClusterResourceUtiliz
             {
                 if(result.CallServer && result.CallServer.length > 0)
                 {
-                    AddToInstanceInfoArray(result.CallServer, function(err, infoList)
+                    AddToInstanceInfoArray(reqId, result.CallServer, function(err, infoList)
                     {
                         var jsonStr = JSON.stringify(infoList);
+
+                        logger.debug('[DVP-MonitorRestAPI.GetClusterResourceUtilization] - [%s] - API RESPONSE : %s', reqId, jsonStr);
 
                         res.end(jsonStr);
                     })
@@ -506,28 +564,16 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetClusterResourceUtiliz
                 {
                     var jsonStr = JSON.stringify(emptyArr);
 
+                    logger.debug('[DVP-MonitorRestAPI.GetClusterResourceUtilization] - [%s] - API RESPONSE : %s', reqId, jsonStr);
+
                     res.end(jsonStr);
                 }
             }
         });
-
-        var instanceInfoKey = instanceId + '##DVP_CS_INSTANCE_INFO';
-
-        redisHandler.GetObject(instanceInfoKey, function (err, instanceInf)
-        {
-            if (err)
-            {
-                res.end('{}');
-            }
-            else
-            {
-                res.end(JSON.stringify(instanceInf));
-            }
-
-        });
     }
     catch(ex)
     {
+        logger.error('[DVP-MonitorRestAPI.GetClusterResourceUtilization] - [%s] - Exception occurred', reqId, ex);
         res.end('{}');
     }
 
@@ -537,20 +583,27 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetClusterResourceUtiliz
 
 server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelCount/:instanceId', function(req, res, next)
 {
+    var reqId = nodeUuid.v1();
     try
     {
         var instanceId = req.params.instanceId;
 
+        logger.debug('[DVP-MonitorRestAPI.GetChannelCount] - [%s] - HTTP Request Received GetChannelCount - Params - instanceId : %s', reqId, instanceId);
+
         var channelCountKey = instanceId + '#DVP_CHANNEL_COUNT';
 
-        redisHandler.GetObject(channelCountKey, function (err, chanCount)
+        logger.debug('[DVP-MonitorRestAPI.GetChannelCount] - [%s] - Trying to get channel count from redis - Key : %s', reqId, channelCountKey);
+
+        redisHandler.GetObject(reqId, channelCountKey, function (err, chanCount)
         {
             if (err)
             {
+                logger.error('[DVP-MonitorRestAPI.GetChannelCount] - [%s] - Exception thrown from redisHandler.GetObject', reqId, err);
                 res.end('{}');
             }
             else
             {
+                logger.debug('[DVP-MonitorRestAPI.GetChannelCount] - [%s] - API RESPONSE : %s', reqId, chanCount);
                 res.end(chanCount);
             }
 
@@ -558,6 +611,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelCount/:instanc
     }
     catch(ex)
     {
+        logger.error('[DVP-MonitorRestAPI.GetChannelCount] - [%s] - Exception occurred', reqId, ex);
         res.end('{}');
     }
 
@@ -567,17 +621,21 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelCount/:instanc
 
 server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelById/:channelId', function(req, res, next)
 {
+    var reqId = nodeUuid.v1();
     try
     {
         var channelId = req.params.channelId;
 
-
+        logger.debug('[DVP-MonitorRestAPI.GetChannelById] - [%s] - HTTP Request Received GetChannelById - Params - channelId : %s', reqId, channelId);
         //Get Registration Details From Redis
 
-        redisHandler.GetFromHash(channelId, function (err, hashObj)
+        logger.debug('[DVP-MonitorRestAPI.GetChannelById] - [%s] - Trying to get channel details from redis - Key : %s', reqId, channelId);
+
+        redisHandler.GetFromHash(reqId, channelId, function (err, hashObj)
         {
             if (err)
             {
+                logger.error('[DVP-MonitorRestAPI.GetChannelById] - [%s] - Exception thrown from redisHandler.GetObject', reqId, err);
                 res.end('{}');
             }
             else
@@ -595,6 +653,8 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelById/:channelI
 
                 var jsonString = JSON.stringify(channelData);
 
+                logger.debug('[DVP-MonitorRestAPI.GetChannelById] - [%s] - API RESPONSE : %s', reqId, jsonString);
+
                 res.end(jsonString);
             }
 
@@ -603,6 +663,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelById/:channelI
     }
     catch(ex)
     {
+        logger.error('[DVP-MonitorRestAPI.GetChannelById] - [%s] - Exception occurred', reqId, ex);
         var jsonString = messageFormatter.FormatMessage(ex, "ERROR", false, undefined);
         res.end(jsonString);
     }
@@ -613,33 +674,41 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelById/:channelI
 
 server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelsByCompany/:companyId/:tenantId', function(req, res, next)
 {
+    var reqId = nodeUuid.v1();
     try
     {
         var companyId = req.params.companyId;
         var tenantId = req.params.tenantId;
 
+        logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - HTTP Request Received GetChannelsByCompany', reqId);
+
         var chanList = [];
 
-        dbHandler.GetDomainByCompany(companyId, tenantId, function (err, endUser)
+        dbHandler.GetDomainByCompany(reqId, companyId, tenantId, function (err, endUser)
         {
             if(endUser && endUser.Domain)
             {
                 //Get Registration Details From Redis
-                redisHandler.GetFromSet('CHANNEL@' + endUser.Domain, function(err, chanTags)
+                var setKey = 'CHANNEL@' + endUser.Domain;
+                logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - Trying to get channels set for company from redis - Key : %s', reqId, setKey);
+                redisHandler.GetFromSet(reqId, setKey, function(err, chanTags)
                 {
                     if(chanTags && chanTags.length > 0)
                     {
                         //get all user hash sets from redis
-                        AddToChannelArray(chanTags, chanList, function(err, arrRes)
+                        AddToChannelArray(reqId, chanTags, chanList, function(err, arrRes)
                         {
                             if(err)
                             {
+                                logger.error('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - Exception thrown from redisHandler.AddToChannelArray', reqId, err);
                                 var jsonStr = JSON.stringify(chanList);
+                                logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonStr);
                                 res.end(jsonStr);
                             }
                             else
                             {
                                 var jsonStr = JSON.stringify(chanList);
+                                logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonStr);
                                 res.end(jsonStr);
                             }
 
@@ -648,6 +717,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelsByCompany/:co
                     else
                     {
                         var jsonString = JSON.stringify(chanList);
+                        logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
                         res.end(jsonString);
                     }
                 });
@@ -657,6 +727,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelsByCompany/:co
             {
                 var jsonString = JSON.stringify(chanList);
 
+                logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
                 res.end(jsonString);
             }
         });
@@ -665,7 +736,9 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelsByCompany/:co
     }
     catch(ex)
     {
+        logger.error('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - Exception occurred', reqId, ex);
         var jsonString = messageFormatter.FormatMessage(ex, "ERROR", false, undefined);
+        logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
         res.end(jsonString);
     }
 
@@ -675,15 +748,19 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelsByCompany/:co
 
 server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceRoomsByCompany/:companyId/:tenantId', function(req, res, next)
 {
+    var reqId = nodeUuid.v1();
     try
     {
         var companyId = req.params.companyId;
         var tenantId = req.params.tenantId;
 
-        dbHandler.GetConferenceListByCompany(companyId, tenantId, function (err, confList)
+        logger.debug('[DVP-MonitorRestAPI.GetConferenceRoomsByCompany] - [%s] - HTTP Request Received GetConferenceRoomsByCompany', reqId);
+
+        dbHandler.GetConferenceListByCompany(reqId, companyId, tenantId, function (err, confList)
         {
             if(err)
             {
+                logger.error('[DVP-MonitorRestAPI.GetConferenceRoomsByCompany] - [%s] - Exception thrown from dbHandler.GetConferenceListByCompany', reqId, err);
                 res.end('{}');
             }
             else
@@ -700,15 +777,18 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceRoomsByComp
                         tagList.push(tag);
                     });
 
-                    AddToConferenceDetailArray(tagList, confDetailList, function(err, confList)
+                    AddToConferenceDetailArray(reqId, tagList, confDetailList, function(err, confList)
                     {
                         if(err)
                         {
+                            logger.error('[DVP-MonitorRestAPI.GetConferenceRoomsByCompany] - [%s] - Exception thrown from AddToConferenceDetailArray', reqId, err);
                             res.end('{}');
                         }
                         else
                         {
                             var jsonString = JSON.stringify(confList);
+
+                            logger.debug('[DVP-MonitorRestAPI.GetConferenceRoomsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
 
                             res.end(jsonString);
                         }
@@ -723,11 +803,10 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceRoomsByComp
 
         });
 
-
-        return next();
     }
     catch(ex)
     {
+        logger.error('[DVP-MonitorRestAPI.GetConferenceRoomsByCompany] - [%s] - Exception occurred', reqId, ex);
         var jsonString = messageFormatter.FormatMessage(ex, "ERROR", false, undefined);
         res.end(jsonString);
     }
@@ -738,19 +817,24 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceRoomsByComp
 
 server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceUsers/:roomName/:companyId/:tenantId', function(req, res, next)
 {
+    var reqId = nodeUuid.v1();
     try
     {
         var roomName = req.params.roomName;
         var companyId = req.params.companyId;
         var tenantId = req.params.tenantId;
 
+        logger.debug('[DVP-MonitorRestAPI.GetConferenceUsers] - [%s] - HTTP Request Received GetConferenceUsers - Params - roomName : %s', reqId, roomName);
+
         var confUserList = [];
 
-        dbHandler.GetConferenceRoomWithCompany(roomName, companyId, tenantId, function (err, conf)
+        dbHandler.GetConferenceRoomWithCompany(reqId, roomName, companyId, tenantId, function (err, conf)
         {
             if(err)
             {
+                logger.error('[DVP-MonitorRestAPI.GetConferenceUsers] - [%s] - Exception thrown from dbHandler.GetConferenceRoomWithCompany', reqId, err);
                 var jsonString = JSON.stringify(confUserList);
+                logger.debug('[DVP-MonitorRestAPI.GetConferenceUsers] - [%s] - API RESPONSE : %s', reqId, jsonString);
                 res.end(jsonString);
             }
             else
@@ -758,25 +842,35 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceUsers/:room
                 if (conf)
                 {
                     //Get Registration Details From Redis
-                    redisHandler.GetObject('ConferenceNameMap_' + roomName, function(err, confId)
+                    var confRedisKey = 'ConferenceNameMap_' + roomName;
+
+                    logger.debug('[DVP-MonitorRestAPI.GetConferenceUsers] - [%s] - Trying to get conference details from redis - Key : %s', reqId, confRedisKey);
+
+                    redisHandler.GetObject(reqId, confRedisKey, function(err, confId)
                     {
                        if(!err && confId)
                        {
-                           redisHandler.GetFromSet('Conference-Member-List-' + confId, function(err, usersArr)
+                           var confUserKey = 'Conference-Member-List-' + confId;
+
+                           logger.debug('[DVP-MonitorRestAPI.GetConferenceUsers] - [%s] - Trying to get conference user details from redis set - Key : %s', reqId, confUserKey);
+
+                           redisHandler.GetFromSet(reqId, confUserKey, function(err, usersArr)
                            {
                                if(!err && usersArr && usersArr.length > 0)
                                {
 
-                                   AddToConferenceUserArray(confId, usersArr, confUserList, function(err, usrList)
+                                   AddToConferenceUserArray(reqId, confId, usersArr, confUserList, function(err, usrList)
                                    {
                                        if(!err && usrList)
                                        {
                                            var jsonString = JSON.stringify(usrList);
+                                           logger.debug('[DVP-MonitorRestAPI.GetConferenceUsers] - [%s] - API RESPONSE : %s', reqId, jsonString);
                                            res.end(jsonString);
                                        }
                                        else
                                        {
                                            var jsonString = JSON.stringify(confUserList);
+                                           logger.debug('[DVP-MonitorRestAPI.GetConferenceUsers] - [%s] - API RESPONSE : %s', reqId, jsonString);
                                            res.end(jsonString);
                                        }
                                    })
@@ -786,6 +880,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceUsers/:room
                                else
                                {
                                    var jsonString = JSON.stringify(confUserList);
+                                   logger.debug('[DVP-MonitorRestAPI.GetConferenceUsers] - [%s] - API RESPONSE : %s', reqId, jsonString);
                                    res.end(jsonString);
                                }
 
@@ -794,6 +889,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceUsers/:room
                        else
                        {
                            var jsonString = JSON.stringify(confUserList);
+                           logger.debug('[DVP-MonitorRestAPI.GetConferenceUsers] - [%s] - API RESPONSE : %s', reqId, jsonString);
                            res.end(jsonString);
                        }
                     });
@@ -802,17 +898,18 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceUsers/:room
                 else
                 {
                     var jsonString = JSON.stringify(confUserList);
+                    logger.debug('[DVP-MonitorRestAPI.GetConferenceUsers] - [%s] - API RESPONSE : %s', reqId, jsonString);
                     res.end(jsonString);
                 }
             }
 
         });
-
-        return next();
     }
     catch(ex)
     {
+        logger.error('[DVP-MonitorRestAPI.GetConferenceUsers] - [%s] - Exception occurred', reqId, ex);
         var jsonString = messageFormatter.FormatMessage(ex, "ERROR", false, undefined);
+        logger.debug('[DVP-MonitorRestAPI.GetConferenceUsers] - [%s] - API RESPONSE : %s', reqId, jsonString);
         res.end(jsonString);
     }
 

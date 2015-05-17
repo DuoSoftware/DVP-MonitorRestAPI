@@ -322,15 +322,15 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetSipRegDetailsByCompan
                             if(err)
                             {
                                 logger.error('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - Exception thrown from method AddToArray', reqId, err);
-                                var jsonStr = JSON.stringify(userList);
-                                logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonStr);
-                                res.end(jsonStr);
+                                var jsonString = messageFormatter.FormatMessage(err, "", false, arrRes);
+                                logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                                res.end(jsonString);
                             }
                             else
                             {
-                                var jsonStr = JSON.stringify(arrRes);
-                                logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonStr);
-                                res.end(jsonStr);
+                                var jsonString = messageFormatter.FormatMessage(err, "", true, arrRes);
+                                logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                                res.end(jsonString);
                             }
 
                         })
@@ -344,8 +344,8 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetSipRegDetailsByCompan
                             logger.error('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - Exception thrown from method redisHandler.GetFromSet', reqId, err);
                         }
 
-                        var jsonString = JSON.stringify(userList);
-                        logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonStr);
+                        var jsonString = messageFormatter.FormatMessage(err, "", false, userList);
+                        logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
                         res.end(jsonString);
                     }
                 });
@@ -359,16 +359,15 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetSipRegDetailsByCompan
                 {
                     logger.error('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - Exception thrown from method dbHandler.GetDomainByCompany', reqId, err);
                 }
-                var jsonString = JSON.stringify(userList);
-                logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonStr);
-
+                var jsonString = messageFormatter.FormatMessage(err, "", false, userList);
+                logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
                 res.end(jsonString);
             }
         });
     }
     catch(ex)
     {
-        logger.error('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - Exception occurred', reqId, err);
+        logger.error('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - Exception occurred', reqId, ex);
         var jsonStr = JSON.stringify(userList);
         logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonStr);
         res.end(jsonStr);
@@ -403,7 +402,9 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetSipRegDetailsByUser/:
                     if(err)
                     {
                         logger.error('[DVP-MonitorRestAPI.GetSipRegDetailsByUser] - [%s] - Exception thrown from method redisHandler.GetFromHash', reqId, err);
-                        res.end('{}');
+                        var jsonString = messageFormatter.FormatMessage(err, "", false, undefined);
+                        logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByUser] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                        res.end(jsonString);
                     }
                     else
                     {
@@ -414,10 +415,8 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetSipRegDetailsByUser/:
 
                         };
 
-                        var jsonString = JSON.stringify(sipUser);
-
+                        var jsonString = messageFormatter.FormatMessage(err, "", true, sipUser);
                         logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByUser] - [%s] - API RESPONSE : %s', reqId, jsonString);
-
                         res.end(jsonString);
                     }
 
@@ -435,14 +434,18 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetSipRegDetailsByUser/:
                     logger.error('[DVP-MonitorRestAPI.GetSipRegDetailsByUser] - [%s] - Exception thrown from method dbHandler.GetDomainByCompany', reqId, err);
                 }
 
-                res.end('{}');
+                var jsonString = messageFormatter.FormatMessage(err, "", false, undefined);
+                logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByUser] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
             }
         });
     }
     catch(ex)
     {
         logger.error('[DVP-MonitorRestAPI.GetSipRegDetailsByUser] - [%s] - Exception occurred', reqId, ex);
-        res.end('{}');
+        var jsonString = messageFormatter.FormatMessage(ex, "", false, undefined);
+        logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByUser] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonString);
     }
 
     return next();
@@ -466,11 +469,15 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetCallsCount/:instanceI
             if (err)
             {
                 logger.error('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - Exception thrown from method redisHandler.GetObject', reqId, err);
-                res.end('{}');
+                var jsonString = messageFormatter.FormatMessage(err, "", false, 0);
+                logger.debug('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
             }
             else
             {
-                res.end(callCount);
+                var jsonString = messageFormatter.FormatMessage(err, "", true, callCount);
+                logger.debug('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
             }
 
 
@@ -479,7 +486,9 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetCallsCount/:instanceI
     catch(ex)
     {
         logger.error('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - Exception occurred', reqId, ex);
-        res.end('{}');
+        var jsonString = messageFormatter.FormatMessage(ex, "", false, 0);
+        logger.debug('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonString);
     }
 
     return next();
@@ -503,13 +512,15 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetInstanceResourceUtili
             if (err)
             {
                 logger.error('[DVP-MonitorRestAPI.GetInstanceResourceUtilization] - [%s] - Exception thrown from method redisHandler.GetObject', reqId, err);
-                res.end('{}');
+                var jsonString = messageFormatter.FormatMessage(err, "", false, instanceInf);
+                logger.debug('[DVP-MonitorRestAPI.GetInstanceResourceUtilization] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
             }
             else
             {
-                var jsonStr = JSON.stringify(instanceInf);
-                logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByUser] - [%s] - API RESPONSE : %s', reqId, jsonStr);
-                res.end(jsonStr);
+                var jsonString = messageFormatter.FormatMessage(err, "", true, instanceInf);
+                logger.debug('[DVP-MonitorRestAPI.GetInstanceResourceUtilization] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
             }
 
         });
@@ -517,7 +528,9 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetInstanceResourceUtili
     catch(ex)
     {
         logger.error('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - Exception occurred', reqId, ex);
-        res.end('{}');
+        var jsonString = messageFormatter.FormatMessage(ex, "", false, undefined);
+        logger.debug('[DVP-MonitorRestAPI.GetInstanceResourceUtilization] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonString);
     }
 
     return next();
@@ -527,13 +540,13 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetInstanceResourceUtili
 server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetClusterResourceUtilization/:clusterId', function(req, res, next)
 {
     var reqId = nodeUuid.v1();
+    var emptyArr = [];
     try
     {
         var clusterId = req.params.clusterId;
 
         logger.debug('[DVP-MonitorRestAPI.GetClusterResourceUtilization] - [%s] - HTTP Request Received - Params - clusterId : %s', reqId, clusterId);
 
-        var emptyArr = [];
 
         logger.debug('[DVP-MonitorRestAPI.GetClusterResourceUtilization] - [%s] - Trying to get servers for cluster from db', reqId);
 
@@ -541,11 +554,9 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetClusterResourceUtiliz
         {
             if(err || !result)
             {
-                var jsonStr = JSON.stringify(emptyArr);
-
-                logger.debug('[DVP-MonitorRestAPI.GetClusterResourceUtilization] - [%s] - API RESPONSE : %s', reqId, jsonStr);
-
-                res.end(jsonStr);
+                var jsonString = messageFormatter.FormatMessage(err, "", false, emptyArr);
+                logger.debug('[DVP-MonitorRestAPI.GetClusterResourceUtilization] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
             }
             else
             {
@@ -553,20 +564,16 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetClusterResourceUtiliz
                 {
                     AddToInstanceInfoArray(reqId, result.CallServer, function(err, infoList)
                     {
-                        var jsonStr = JSON.stringify(infoList);
-
-                        logger.debug('[DVP-MonitorRestAPI.GetClusterResourceUtilization] - [%s] - API RESPONSE : %s', reqId, jsonStr);
-
-                        res.end(jsonStr);
+                        var jsonString = messageFormatter.FormatMessage(err, "", true, infoList);
+                        logger.debug('[DVP-MonitorRestAPI.GetClusterResourceUtilization] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                        res.end(jsonString);
                     })
                 }
                 else
                 {
-                    var jsonStr = JSON.stringify(emptyArr);
-
-                    logger.debug('[DVP-MonitorRestAPI.GetClusterResourceUtilization] - [%s] - API RESPONSE : %s', reqId, jsonStr);
-
-                    res.end(jsonStr);
+                    var jsonString = messageFormatter.FormatMessage(err, "", false, emptyArr);
+                    logger.debug('[DVP-MonitorRestAPI.GetClusterResourceUtilization] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                    res.end(jsonString);
                 }
             }
         });
@@ -574,7 +581,9 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetClusterResourceUtiliz
     catch(ex)
     {
         logger.error('[DVP-MonitorRestAPI.GetClusterResourceUtilization] - [%s] - Exception occurred', reqId, ex);
-        res.end('{}');
+        var jsonString = messageFormatter.FormatMessage(ex, "", false, emptyArr);
+        logger.debug('[DVP-MonitorRestAPI.GetClusterResourceUtilization] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonString);
     }
 
     return next();
@@ -599,12 +608,16 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelCount/:instanc
             if (err)
             {
                 logger.error('[DVP-MonitorRestAPI.GetChannelCount] - [%s] - Exception thrown from redisHandler.GetObject', reqId, err);
-                res.end('{}');
+                var jsonString = messageFormatter.FormatMessage(err, "", false, 0);
+                logger.debug('[DVP-MonitorRestAPI.GetChannelCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
             }
             else
             {
                 logger.debug('[DVP-MonitorRestAPI.GetChannelCount] - [%s] - API RESPONSE : %s', reqId, chanCount);
-                res.end(chanCount);
+                var jsonString = messageFormatter.FormatMessage(err, "", true, chanCount);
+                logger.debug('[DVP-MonitorRestAPI.GetChannelCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
             }
 
         });
@@ -612,7 +625,9 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelCount/:instanc
     catch(ex)
     {
         logger.error('[DVP-MonitorRestAPI.GetChannelCount] - [%s] - Exception occurred', reqId, ex);
-        res.end('{}');
+        var jsonString = messageFormatter.FormatMessage(ex, "", false, 0);
+        logger.debug('[DVP-MonitorRestAPI.GetChannelCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonString);
     }
 
     return next();
@@ -636,7 +651,9 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelById/:channelI
             if (err)
             {
                 logger.error('[DVP-MonitorRestAPI.GetChannelById] - [%s] - Exception thrown from redisHandler.GetObject', reqId, err);
-                res.end('{}');
+                var jsonString = messageFormatter.FormatMessage(err, "", false, undefined);
+                logger.debug('[DVP-MonitorRestAPI.GetChannelById] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
             }
             else
             {
@@ -651,10 +668,8 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelById/:channelI
                     CallType : hashObj["Call-Type"]
                 };
 
-                var jsonString = JSON.stringify(channelData);
-
+                var jsonString = messageFormatter.FormatMessage(err, "", true, channelData);
                 logger.debug('[DVP-MonitorRestAPI.GetChannelById] - [%s] - API RESPONSE : %s', reqId, jsonString);
-
                 res.end(jsonString);
             }
 
@@ -675,6 +690,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelById/:channelI
 server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelsByCompany/:companyId/:tenantId', function(req, res, next)
 {
     var reqId = nodeUuid.v1();
+    var chanList = [];
     try
     {
         var companyId = req.params.companyId;
@@ -682,7 +698,6 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelsByCompany/:co
 
         logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - HTTP Request Received GetChannelsByCompany', reqId);
 
-        var chanList = [];
 
         dbHandler.GetDomainByCompany(reqId, companyId, tenantId, function (err, endUser)
         {
@@ -701,22 +716,22 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelsByCompany/:co
                             if(err)
                             {
                                 logger.error('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - Exception thrown from redisHandler.AddToChannelArray', reqId, err);
-                                var jsonStr = JSON.stringify(chanList);
-                                logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonStr);
-                                res.end(jsonStr);
+                                var jsonString = messageFormatter.FormatMessage(err, "", false, chanList);
+                                logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                                res.end(jsonString);
                             }
                             else
                             {
-                                var jsonStr = JSON.stringify(chanList);
-                                logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonStr);
-                                res.end(jsonStr);
+                                var jsonString = messageFormatter.FormatMessage(err, "", true, chanList);
+                                logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                                res.end(jsonString);
                             }
 
                         })
                     }
                     else
                     {
-                        var jsonString = JSON.stringify(chanList);
+                        var jsonString = messageFormatter.FormatMessage(err, "", false, chanList);
                         logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
                         res.end(jsonString);
                     }
@@ -725,8 +740,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelsByCompany/:co
             }
             else
             {
-                var jsonString = JSON.stringify(chanList);
-
+                var jsonString = messageFormatter.FormatMessage(err, "", true, chanList);
                 logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
                 res.end(jsonString);
             }
@@ -737,7 +751,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelsByCompany/:co
     catch(ex)
     {
         logger.error('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - Exception occurred', reqId, ex);
-        var jsonString = messageFormatter.FormatMessage(ex, "ERROR", false, undefined);
+        var jsonString = messageFormatter.FormatMessage(ex, "", true, chanList);
         logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
         res.end(jsonString);
     }
@@ -748,6 +762,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelsByCompany/:co
 
 server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceRoomsByCompany/:companyId/:tenantId', function(req, res, next)
 {
+    var emptyConfList = [];
     var reqId = nodeUuid.v1();
     try
     {
@@ -761,7 +776,9 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceRoomsByComp
             if(err)
             {
                 logger.error('[DVP-MonitorRestAPI.GetConferenceRoomsByCompany] - [%s] - Exception thrown from dbHandler.GetConferenceListByCompany', reqId, err);
-                res.end('{}');
+                var jsonString = messageFormatter.FormatMessage(err, "", false, confList);
+                logger.debug('[DVP-MonitorRestAPI.GetConferenceRoomsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
             }
             else
             {
@@ -782,14 +799,14 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceRoomsByComp
                         if(err)
                         {
                             logger.error('[DVP-MonitorRestAPI.GetConferenceRoomsByCompany] - [%s] - Exception thrown from AddToConferenceDetailArray', reqId, err);
-                            res.end('{}');
+                            var jsonString = messageFormatter.FormatMessage(err, "", false, confList);
+                            logger.debug('[DVP-MonitorRestAPI.GetConferenceRoomsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                            res.end(jsonString);
                         }
                         else
                         {
-                            var jsonString = JSON.stringify(confList);
-
+                            var jsonString = messageFormatter.FormatMessage(err, "", true, confList);
                             logger.debug('[DVP-MonitorRestAPI.GetConferenceRoomsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
-
                             res.end(jsonString);
                         }
                     })
@@ -797,7 +814,9 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceRoomsByComp
                 }
                 else
                 {
-                    res.end('{}');
+                    var jsonString = messageFormatter.FormatMessage(err, "", false, emptyConfList);
+                    logger.debug('[DVP-MonitorRestAPI.GetConferenceRoomsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                    res.end(jsonString);
                 }
             }
 
@@ -807,7 +826,8 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceRoomsByComp
     catch(ex)
     {
         logger.error('[DVP-MonitorRestAPI.GetConferenceRoomsByCompany] - [%s] - Exception occurred', reqId, ex);
-        var jsonString = messageFormatter.FormatMessage(ex, "ERROR", false, undefined);
+        var jsonString = messageFormatter.FormatMessage(ex, "", false, emptyConfList);
+        logger.debug('[DVP-MonitorRestAPI.GetConferenceRoomsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
         res.end(jsonString);
     }
 
@@ -817,6 +837,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceRoomsByComp
 
 server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceUsers/:roomName/:companyId/:tenantId', function(req, res, next)
 {
+    var confUserList = [];
     var reqId = nodeUuid.v1();
     try
     {
@@ -826,14 +847,13 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceUsers/:room
 
         logger.debug('[DVP-MonitorRestAPI.GetConferenceUsers] - [%s] - HTTP Request Received GetConferenceUsers - Params - roomName : %s', reqId, roomName);
 
-        var confUserList = [];
 
         dbHandler.GetConferenceRoomWithCompany(reqId, roomName, companyId, tenantId, function (err, conf)
         {
             if(err)
             {
                 logger.error('[DVP-MonitorRestAPI.GetConferenceUsers] - [%s] - Exception thrown from dbHandler.GetConferenceRoomWithCompany', reqId, err);
-                var jsonString = JSON.stringify(confUserList);
+                var jsonString = messageFormatter.FormatMessage(err, "", false, confUserList);
                 logger.debug('[DVP-MonitorRestAPI.GetConferenceUsers] - [%s] - API RESPONSE : %s', reqId, jsonString);
                 res.end(jsonString);
             }
@@ -863,13 +883,13 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceUsers/:room
                                    {
                                        if(!err && usrList)
                                        {
-                                           var jsonString = JSON.stringify(usrList);
+                                           var jsonString = messageFormatter.FormatMessage(err, "", true, usrList);
                                            logger.debug('[DVP-MonitorRestAPI.GetConferenceUsers] - [%s] - API RESPONSE : %s', reqId, jsonString);
                                            res.end(jsonString);
                                        }
                                        else
                                        {
-                                           var jsonString = JSON.stringify(confUserList);
+                                           var jsonString = messageFormatter.FormatMessage(err, "", true, usrList);
                                            logger.debug('[DVP-MonitorRestAPI.GetConferenceUsers] - [%s] - API RESPONSE : %s', reqId, jsonString);
                                            res.end(jsonString);
                                        }
@@ -879,7 +899,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceUsers/:room
                                }
                                else
                                {
-                                   var jsonString = JSON.stringify(confUserList);
+                                   var jsonString = messageFormatter.FormatMessage(err, "", false, confUserList);
                                    logger.debug('[DVP-MonitorRestAPI.GetConferenceUsers] - [%s] - API RESPONSE : %s', reqId, jsonString);
                                    res.end(jsonString);
                                }
@@ -888,7 +908,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceUsers/:room
                        }
                        else
                        {
-                           var jsonString = JSON.stringify(confUserList);
+                           var jsonString = messageFormatter.FormatMessage(err, "", false, confUserList);
                            logger.debug('[DVP-MonitorRestAPI.GetConferenceUsers] - [%s] - API RESPONSE : %s', reqId, jsonString);
                            res.end(jsonString);
                        }
@@ -897,7 +917,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceUsers/:room
                 }
                 else
                 {
-                    var jsonString = JSON.stringify(confUserList);
+                    var jsonString = messageFormatter.FormatMessage(err, "", false, confUserList);
                     logger.debug('[DVP-MonitorRestAPI.GetConferenceUsers] - [%s] - API RESPONSE : %s', reqId, jsonString);
                     res.end(jsonString);
                 }
@@ -908,7 +928,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceUsers/:room
     catch(ex)
     {
         logger.error('[DVP-MonitorRestAPI.GetConferenceUsers] - [%s] - Exception occurred', reqId, ex);
-        var jsonString = messageFormatter.FormatMessage(ex, "ERROR", false, undefined);
+        var jsonString = messageFormatter.FormatMessage(ex, "", false, confUserList);
         logger.debug('[DVP-MonitorRestAPI.GetConferenceUsers] - [%s] - API RESPONSE : %s', reqId, jsonString);
         res.end(jsonString);
     }

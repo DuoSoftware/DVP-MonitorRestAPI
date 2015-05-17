@@ -2,8 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e7db1d55-5768-40ba-a42e-6103eb6b6be5" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/DBBackendHandler.js" afterPath="$PROJECT_DIR$/DBBackendHandler.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/RedisHandler.js" afterPath="$PROJECT_DIR$/RedisHandler.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app.js" afterPath="$PROJECT_DIR$/app.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
@@ -32,25 +30,25 @@
       <file leaf-file-name="app.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-0.16521738" vertical-offset="486" max-vertical-offset="1275">
-              <caret line="23" column="0" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.4973913" vertical-offset="11104" max-vertical-offset="11679">
+              <caret line="930" column="40" selection-start-line="930" selection-start-column="40" selection-end-line="930" selection-end-column="40" />
               <folding>
                 <element signature="e#794#2041#0" expanded="false" />
                 <element signature="e#2107#3040#0" expanded="false" />
                 <element signature="e#3114#4093#0" expanded="false" />
                 <element signature="e#4185#6439#0" expanded="false" />
                 <element signature="e#6535#8227#0" expanded="false" />
-                <element signature="e#8360#12004#0" expanded="false" />
-                <element signature="e#12141#14465#0" expanded="false" />
-                <element signature="e#14578#15597#0" expanded="false" />
-                <element signature="e#15727#17000#0" expanded="false" />
-                <element signature="e#17128#18932#0" expanded="false" />
-                <element signature="e#19047#20205#0" expanded="false" />
-                <element signature="e#20318#22122#0" expanded="false" />
-                <element signature="e#22251#25273#0" expanded="false" />
-                <element signature="e#25409#27683#0" expanded="false" />
-                <element signature="e#27820#32369#0" expanded="false" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="package.json" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="102" max-vertical-offset="629">
+              <caret line="6" column="4" selection-start-line="6" selection-start-column="4" selection-end-line="6" selection-end-column="43" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -88,8 +86,8 @@
       <file leaf-file-name="DBBackendHandler.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/DBBackendHandler.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2057">
-              <caret line="12" column="16" selection-start-line="12" selection-start-column="16" selection-end-line="19" selection-end-column="17" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="255" max-vertical-offset="2057">
+              <caret line="15" column="17" selection-start-line="15" selection-start-column="17" selection-end-line="15" selection-end-column="17" />
               <folding />
             </state>
           </provider>
@@ -184,7 +182,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../DVP-SystemRegistry" />
     <property name="HbShouldOpenHtmlAsHb" value="" />
     <property name="recentsLimit" value="5" />
     <property name="restartRequiresConfirmation" value="true" />
@@ -198,10 +196,14 @@
       <ConfigurationWrapper RunnerId="debuggableProgram" />
       <method />
     </configuration>
+    <configuration default="true" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application">
+      <method />
+    </configuration>
     <configuration default="true" type="DartUnitRunConfigurationType" factoryName="DartUnit">
       <method />
     </configuration>
-    <configuration default="true" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application">
+    <configuration default="true" type="JavaScriptTestRunnerKarma" factoryName="Karma" config-file="">
+      <envs />
       <method />
     </configuration>
     <configuration default="true" type="JSTestDriver:ConfigurationType" factoryName="JsTestDriver">
@@ -209,10 +211,6 @@
       <setting name="settingsFile" value="" />
       <setting name="serverType" value="INTERNAL" />
       <setting name="preferredDebugBrowser" value="Chrome" />
-      <method />
-    </configuration>
-    <configuration default="true" type="JavaScriptTestRunnerKarma" factoryName="Karma" config-file="">
-      <envs />
       <method />
     </configuration>
     <configuration default="true" type="JavascriptDebugType" factoryName="JavaScript Debug">
@@ -258,7 +256,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1382" height="744" extended-state="1" />
+    <frame x="-8" y="-8" width="1382" height="744" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -272,13 +270,13 @@
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32899022" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32899022" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39739415" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32899022" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32899022" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -326,17 +324,17 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/app.js</url>
-          <line>364</line>
+          <line>363</line>
           <option name="timeStamp" value="26" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/app.js</url>
-          <line>373</line>
+          <line>372</line>
           <option name="timeStamp" value="28" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/app.js</url>
-          <line>371</line>
+          <line>370</line>
           <option name="timeStamp" value="29" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
@@ -346,67 +344,67 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/app.js</url>
-          <line>385</line>
+          <line>384</line>
           <option name="timeStamp" value="45" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/app.js</url>
-          <line>393</line>
+          <line>392</line>
           <option name="timeStamp" value="46" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/app.js</url>
-          <line>396</line>
+          <line>395</line>
           <option name="timeStamp" value="47" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/app.js</url>
-          <line>409</line>
+          <line>410</line>
           <option name="timeStamp" value="48" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/app.js</url>
-          <line>423</line>
+          <line>422</line>
           <option name="timeStamp" value="49" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/app.js</url>
-          <line>679</line>
+          <line>695</line>
           <option name="timeStamp" value="52" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/app.js</url>
-          <line>695</line>
+          <line>710</line>
           <option name="timeStamp" value="53" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/app.js</url>
-          <line>700</line>
+          <line>715</line>
           <option name="timeStamp" value="54" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/app.js</url>
-          <line>688</line>
+          <line>703</line>
           <option name="timeStamp" value="55" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/app.js</url>
-          <line>693</line>
+          <line>708</line>
           <option name="timeStamp" value="56" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/app.js</url>
-          <line>753</line>
+          <line>768</line>
           <option name="timeStamp" value="59" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/app.js</url>
-          <line>760</line>
+          <line>775</line>
           <option name="timeStamp" value="60" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/app.js</url>
-          <line>781</line>
+          <line>798</line>
           <option name="timeStamp" value="61" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
@@ -481,16 +479,16 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/app.js</url>
-          <line>910</line>
+          <line>930</line>
           <option name="timeStamp" value="78" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/app.js</url>
-          <line>527</line>
+          <line>540</line>
           <option name="timeStamp" value="83" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="86" />
+      <option name="time" value="87" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -521,16 +519,6 @@
             <element signature="e#3114#4093#0" expanded="false" />
             <element signature="e#4185#6439#0" expanded="false" />
             <element signature="e#6535#8227#0" expanded="false" />
-            <element signature="e#8360#12004#0" expanded="false" />
-            <element signature="e#12141#14465#0" expanded="false" />
-            <element signature="e#14578#15597#0" expanded="false" />
-            <element signature="e#15727#17000#0" expanded="false" />
-            <element signature="e#17128#18932#0" expanded="false" />
-            <element signature="e#19047#20205#0" expanded="false" />
-            <element signature="e#20318#22122#0" expanded="false" />
-            <element signature="e#22251#25273#0" expanded="false" />
-            <element signature="e#25409#27683#0" expanded="false" />
-            <element signature="e#27820#32369#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -569,16 +557,6 @@
             <element signature="e#3114#4093#0" expanded="false" />
             <element signature="e#4185#6439#0" expanded="false" />
             <element signature="e#6535#8227#0" expanded="false" />
-            <element signature="e#8360#12004#0" expanded="false" />
-            <element signature="e#12141#14465#0" expanded="false" />
-            <element signature="e#14578#15597#0" expanded="false" />
-            <element signature="e#15727#17000#0" expanded="false" />
-            <element signature="e#17128#18932#0" expanded="false" />
-            <element signature="e#19047#20205#0" expanded="false" />
-            <element signature="e#20318#22122#0" expanded="false" />
-            <element signature="e#22251#25273#0" expanded="false" />
-            <element signature="e#25409#27683#0" expanded="false" />
-            <element signature="e#27820#32369#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -617,16 +595,6 @@
             <element signature="e#3114#4093#0" expanded="false" />
             <element signature="e#4185#6439#0" expanded="false" />
             <element signature="e#6535#8227#0" expanded="false" />
-            <element signature="e#8360#12004#0" expanded="false" />
-            <element signature="e#12141#14465#0" expanded="false" />
-            <element signature="e#14578#15597#0" expanded="false" />
-            <element signature="e#15727#17000#0" expanded="false" />
-            <element signature="e#17128#18932#0" expanded="false" />
-            <element signature="e#19047#20205#0" expanded="false" />
-            <element signature="e#20318#22122#0" expanded="false" />
-            <element signature="e#22251#25273#0" expanded="false" />
-            <element signature="e#25409#27683#0" expanded="false" />
-            <element signature="e#27820#32369#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -665,16 +633,6 @@
             <element signature="e#3114#4093#0" expanded="false" />
             <element signature="e#4185#6439#0" expanded="false" />
             <element signature="e#6535#8227#0" expanded="false" />
-            <element signature="e#8360#12004#0" expanded="false" />
-            <element signature="e#12141#14465#0" expanded="false" />
-            <element signature="e#14578#15597#0" expanded="false" />
-            <element signature="e#15727#17000#0" expanded="false" />
-            <element signature="e#17128#18932#0" expanded="false" />
-            <element signature="e#19047#20205#0" expanded="false" />
-            <element signature="e#20318#22122#0" expanded="false" />
-            <element signature="e#22251#25273#0" expanded="false" />
-            <element signature="e#25409#27683#0" expanded="false" />
-            <element signature="e#27820#32369#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -713,16 +671,6 @@
             <element signature="e#3114#4093#0" expanded="false" />
             <element signature="e#4185#6439#0" expanded="false" />
             <element signature="e#6535#8227#0" expanded="false" />
-            <element signature="e#8360#12004#0" expanded="false" />
-            <element signature="e#12141#14465#0" expanded="false" />
-            <element signature="e#14578#15597#0" expanded="false" />
-            <element signature="e#15727#17000#0" expanded="false" />
-            <element signature="e#17128#18932#0" expanded="false" />
-            <element signature="e#19047#20205#0" expanded="false" />
-            <element signature="e#20318#22122#0" expanded="false" />
-            <element signature="e#22251#25273#0" expanded="false" />
-            <element signature="e#25409#27683#0" expanded="false" />
-            <element signature="e#27820#32369#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -761,16 +709,6 @@
             <element signature="e#3114#4093#0" expanded="false" />
             <element signature="e#4185#6439#0" expanded="false" />
             <element signature="e#6535#8227#0" expanded="false" />
-            <element signature="e#8360#12004#0" expanded="false" />
-            <element signature="e#12141#14465#0" expanded="false" />
-            <element signature="e#14578#15597#0" expanded="false" />
-            <element signature="e#15727#17000#0" expanded="false" />
-            <element signature="e#17128#18932#0" expanded="false" />
-            <element signature="e#19047#20205#0" expanded="false" />
-            <element signature="e#20318#22122#0" expanded="false" />
-            <element signature="e#22251#25273#0" expanded="false" />
-            <element signature="e#25409#27683#0" expanded="false" />
-            <element signature="e#27820#32369#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -809,16 +747,6 @@
             <element signature="e#3114#4093#0" expanded="false" />
             <element signature="e#4185#6439#0" expanded="false" />
             <element signature="e#6535#8227#0" expanded="false" />
-            <element signature="e#8360#12004#0" expanded="false" />
-            <element signature="e#12141#14465#0" expanded="false" />
-            <element signature="e#14578#15597#0" expanded="false" />
-            <element signature="e#15727#17000#0" expanded="false" />
-            <element signature="e#17128#18932#0" expanded="false" />
-            <element signature="e#19047#20205#0" expanded="false" />
-            <element signature="e#20318#22122#0" expanded="false" />
-            <element signature="e#22251#25273#0" expanded="false" />
-            <element signature="e#25409#27683#0" expanded="false" />
-            <element signature="e#27820#32369#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -857,16 +785,6 @@
             <element signature="e#3114#4093#0" expanded="false" />
             <element signature="e#4185#6439#0" expanded="false" />
             <element signature="e#6535#8227#0" expanded="false" />
-            <element signature="e#8360#12004#0" expanded="false" />
-            <element signature="e#12141#14465#0" expanded="false" />
-            <element signature="e#14578#15597#0" expanded="false" />
-            <element signature="e#15727#17000#0" expanded="false" />
-            <element signature="e#17128#18932#0" expanded="false" />
-            <element signature="e#19047#20205#0" expanded="false" />
-            <element signature="e#20318#22122#0" expanded="false" />
-            <element signature="e#22251#25273#0" expanded="false" />
-            <element signature="e#25409#27683#0" expanded="false" />
-            <element signature="e#27820#32369#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -897,16 +815,6 @@
             <element signature="e#3114#4093#0" expanded="false" />
             <element signature="e#4185#6439#0" expanded="false" />
             <element signature="e#6535#8227#0" expanded="false" />
-            <element signature="e#8360#12004#0" expanded="false" />
-            <element signature="e#12141#14465#0" expanded="false" />
-            <element signature="e#14578#15597#0" expanded="false" />
-            <element signature="e#15727#17000#0" expanded="false" />
-            <element signature="e#17128#18932#0" expanded="false" />
-            <element signature="e#19047#20205#0" expanded="false" />
-            <element signature="e#20318#22122#0" expanded="false" />
-            <element signature="e#22251#25273#0" expanded="false" />
-            <element signature="e#25409#27683#0" expanded="false" />
-            <element signature="e#27820#32369#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -952,16 +860,6 @@
             <element signature="e#3114#4093#0" expanded="false" />
             <element signature="e#4185#6439#0" expanded="false" />
             <element signature="e#6535#8227#0" expanded="false" />
-            <element signature="e#8360#12004#0" expanded="false" />
-            <element signature="e#12141#14465#0" expanded="false" />
-            <element signature="e#14578#15597#0" expanded="false" />
-            <element signature="e#15727#17000#0" expanded="false" />
-            <element signature="e#17128#18932#0" expanded="false" />
-            <element signature="e#19047#20205#0" expanded="false" />
-            <element signature="e#20318#22122#0" expanded="false" />
-            <element signature="e#22251#25273#0" expanded="false" />
-            <element signature="e#25409#27683#0" expanded="false" />
-            <element signature="e#27820#32369#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1027,21 +925,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.66295266" vertical-offset="0" max-vertical-offset="629">
-          <caret line="14" column="23" selection-start-line="14" selection-start-column="23" selection-end-line="14" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/DBBackendHandler.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2057">
-          <caret line="12" column="16" selection-start-line="12" selection-start-column="16" selection-end-line="19" selection-end-column="17" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/RedisHandler.js">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="153" max-vertical-offset="2839">
@@ -1050,26 +933,32 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/package.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="102" max-vertical-offset="629">
+          <caret line="6" column="4" selection-start-line="6" selection-start-column="4" selection-end-line="6" selection-end-column="43" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/DBBackendHandler.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2057">
+          <caret line="15" column="17" selection-start-line="15" selection-start-column="17" selection-end-line="15" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/app.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-0.16521738" vertical-offset="486" max-vertical-offset="1275">
-          <caret line="23" column="0" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.4973913" vertical-offset="11104" max-vertical-offset="11679">
+          <caret line="930" column="40" selection-start-line="930" selection-start-column="40" selection-end-line="930" selection-end-column="40" />
           <folding>
             <element signature="e#794#2041#0" expanded="false" />
             <element signature="e#2107#3040#0" expanded="false" />
             <element signature="e#3114#4093#0" expanded="false" />
             <element signature="e#4185#6439#0" expanded="false" />
             <element signature="e#6535#8227#0" expanded="false" />
-            <element signature="e#8360#12004#0" expanded="false" />
-            <element signature="e#12141#14465#0" expanded="false" />
-            <element signature="e#14578#15597#0" expanded="false" />
-            <element signature="e#15727#17000#0" expanded="false" />
-            <element signature="e#17128#18932#0" expanded="false" />
-            <element signature="e#19047#20205#0" expanded="false" />
-            <element signature="e#20318#22122#0" expanded="false" />
-            <element signature="e#22251#25273#0" expanded="false" />
-            <element signature="e#25409#27683#0" expanded="false" />
-            <element signature="e#27820#32369#0" expanded="false" />
           </folding>
         </state>
       </provider>

@@ -295,14 +295,14 @@ var AddToConferenceUserArray = function(reqId, confId, confUserTags, confUserLis
     }
 };
 
-server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetSipRegDetailsByCompany/:companyId/:tenantId', function(req, res, next)
+server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/SipRegistrations', function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     var userList = [];
     try
     {
-        var companyId = req.params.companyId;
-        var tenantId = req.params.tenantId;
+        var companyId = 1;
+        var tenantId = 1;
 
         logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - HTTP Request Received', reqId);
 
@@ -377,14 +377,14 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetSipRegDetailsByCompan
 
 });
 
-server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetSipRegDetailsByUser/:user/:companyId/:tenantId', function(req, res, next)
+server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/SipRegistrations/User/:user', function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     try
     {
         var user = req.params.user;
-        var companyId = req.params.companyId;
-        var tenantId = req.params.tenantId;
+        var companyId = 1;
+        var tenantId = 1;
 
         logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByUser] - [%s] - HTTP Request Received - Params - User : %s', reqId, user);
 
@@ -452,7 +452,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetSipRegDetailsByUser/:
 
 });
 
-server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetCallsCount/:instanceId', function(req, res, next)
+server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/FSInstance/:instanceId/Calls/Count', function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     try
@@ -495,7 +495,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetCallsCount/:instanceI
 
 });
 
-server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetInstanceResourceUtilization/:instanceId', function(req, res, next)
+server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/FSInstance/:instanceId/ResourceUtilization', function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     try
@@ -537,7 +537,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetInstanceResourceUtili
 
 });
 
-server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetClusterResourceUtilization/:clusterId', function(req, res, next)
+server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/Cluster/:clusterId/ResourceUtilization', function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     var emptyArr = [];
@@ -590,7 +590,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetClusterResourceUtiliz
 
 });
 
-server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelCount/:instanceId', function(req, res, next)
+server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/FSInstance/:instanceId/Channel/Count', function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     try
@@ -634,7 +634,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelCount/:instanc
 
 });
 
-server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelById/:channelId', function(req, res, next)
+server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/Channel/:channelId', function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     try
@@ -687,14 +687,14 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelById/:channelI
 
 });
 
-server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelsByCompany/:companyId/:tenantId', function(req, res, next)
+server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/Channels', function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     var chanList = [];
     try
     {
-        var companyId = req.params.companyId;
-        var tenantId = req.params.tenantId;
+        var companyId = 1;
+        var tenantId = 1;
 
         logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - HTTP Request Received GetChannelsByCompany', reqId);
 
@@ -760,14 +760,14 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetChannelsByCompany/:co
 
 });
 
-server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceRoomsByCompany/:companyId/:tenantId', function(req, res, next)
+server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/Conferences', function(req, res, next)
 {
     var emptyConfList = [];
     var reqId = nodeUuid.v1();
     try
     {
-        var companyId = req.params.companyId;
-        var tenantId = req.params.tenantId;
+        var companyId = 1;
+        var tenantId = 1;
 
         logger.debug('[DVP-MonitorRestAPI.GetConferenceRoomsByCompany] - [%s] - HTTP Request Received GetConferenceRoomsByCompany', reqId);
 
@@ -835,15 +835,15 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceRoomsByComp
 
 });
 
-server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/GetConferenceUsers/:roomName/:companyId/:tenantId', function(req, res, next)
+server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/Conference/:roomName/Users', function(req, res, next)
 {
     var confUserList = [];
     var reqId = nodeUuid.v1();
     try
     {
         var roomName = req.params.roomName;
-        var companyId = req.params.companyId;
-        var tenantId = req.params.tenantId;
+        var companyId = 1;
+        var tenantId = 1;
 
         logger.debug('[DVP-MonitorRestAPI.GetConferenceUsers] - [%s] - HTTP Request Received GetConferenceUsers - Params - roomName : %s', reqId, roomName);
 

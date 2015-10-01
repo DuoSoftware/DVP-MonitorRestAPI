@@ -3,9 +3,9 @@ var stringify = require('stringify');
 var config = require('config');
 var dbHandler = require('./DBBackendHandler.js');
 var redisHandler = require('./RedisHandler.js');
-var messageFormatter = require('DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
+var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 var nodeUuid = require('node-uuid');
-var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
+var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 
 var hostIp = config.Host.Ip;
 var hostPort = config.Host.Port;

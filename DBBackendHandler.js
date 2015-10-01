@@ -1,5 +1,5 @@
-var dbModel = require('DVP-DBModels');
-var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
+var dbModel = require('dvp-dbmodels');
+var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 
 var GetConferenceRoomWithCompany = function(reqId, roomName, companyId, tenantId, callback)
 {
@@ -8,17 +8,15 @@ var GetConferenceRoomWithCompany = function(reqId, roomName, companyId, tenantId
         logger.debug('[DVP-MonitorRestAPI.GetConferenceRoomWithCompany] - [%s] - Method Params - roomName : %s, companyId : %s, tenantId : %s', reqId, roomName, companyId, tenantId);
 
         dbModel.Conference.find({where: [{CompanyId: companyId},{TenantId: tenantId},{ConferenceName: roomName}]})
-            .complete(function (err, conf)
+            .then(function (conf)
             {
-                if(err)
-                {
-                    logger.error('[DVP-MonitorRestAPI.GetConferenceRoomWithCompany] - [%s] - PGSQL query failed', reqId, err);
-                }
-                else
-                {
-                    logger.debug('[DVP-MonitorRestAPI.GetConferenceRoomWithCompany] - [%s] - PGSQL query success', reqId);
-                }
-                callback(err, conf);
+                logger.debug('[DVP-MonitorRestAPI.GetConferenceRoomWithCompany] - [%s] - PGSQL query success', reqId);
+
+                callback(undefined, conf);
+            }).catch(function(err)
+            {
+                logger.error('[DVP-MonitorRestAPI.GetConferenceRoomWithCompany] - [%s] - PGSQL query failed', reqId, err);
+                callback(err, undefined);
             });
     }
     catch(ex)
@@ -35,17 +33,15 @@ var GetCallServersForCluster = function(reqId, clusterId, callback)
         logger.debug('[DVP-MonitorRestAPI.GetCallServersForCluster] - [%s] - Method Params - clusterId : %s', reqId, clusterId);
 
         dbModel.Cloud.find({where: [{id: clusterId}], include: [{model: dbModel.CallServer, as: 'CallServer'}]})
-            .complete(function (err, cloudInfo)
+            .then(function (cloudInfo)
             {
-                if(err)
-                {
-                    logger.error('[DVP-MonitorRestAPI.GetCallServersForCluster] - [%s] - PGSQL query failed', reqId, err);
-                }
-                else
-                {
-                    logger.debug('[DVP-MonitorRestAPI.GetCallServersForCluster] - [%s] - PGSQL query success', reqId);
-                }
+                logger.debug('[DVP-MonitorRestAPI.GetCallServersForCluster] - [%s] - PGSQL query success', reqId);
+
                 callback(err, cloudInfo);
+            }).catch(function(err)
+            {
+                logger.error('[DVP-MonitorRestAPI.GetCallServersForCluster] - [%s] - PGSQL query failed', reqId, err);
+                callback(err, undefined);
             });
     }
     catch(ex)
@@ -61,18 +57,15 @@ var GetDomainByCompany = function(reqId, companyId, tenantId, callback)
     {
         logger.debug('[DVP-MonitorRestAPI.GetDomainByCompany] - [%s] - Method Params - companyId : %s, tenantId : %s', reqId, companyId, tenantId);
         dbModel.CloudEndUser.find({where: [{CompanyId: companyId},{TenantId: tenantId}]})
-            .complete(function (err, endUser)
+            .then(function (endUser)
             {
-                if(err)
-                {
-                    logger.error('[DVP-MonitorRestAPI.GetDomainByCompany] - [%s] - PGSQL query failed', reqId, err);
-                }
-                else
-                {
-                    logger.debug('[DVP-MonitorRestAPI.GetDomainByCompany] - [%s] - PGSQL query success', reqId);
-                }
+                logger.debug('[DVP-MonitorRestAPI.GetDomainByCompany] - [%s] - PGSQL query success', reqId);
 
-                callback(err, endUser);
+                callback(undefined, endUser);
+            }).catch(function(err)
+            {
+                logger.error('[DVP-MonitorRestAPI.GetDomainByCompany] - [%s] - PGSQL query failed', reqId, err);
+                callback(err, undefined);
             });
     }
     catch(ex)
@@ -86,21 +79,20 @@ var GetConferenceListByCompany = function(reqId, companyId, tenantId, callback)
 {
     try
     {
+        var tempArr = [];
         logger.debug('[DVP-MonitorRestAPI.GetConferenceListByCompany] - [%s] - Method Params - companyId : %s, tenantId : %s', reqId, companyId, tenantId);
 
         dbModel.Conference.findAll({where: [{CompanyId: companyId},{TenantId: tenantId}]})
-            .complete(function (err, confArr)
+            .then(function (confArr)
             {
-                if(err)
-                {
-                    logger.error('[DVP-MonitorRestAPI.GetConferenceListByCompany] - [%s] - PGSQL query failed', reqId, err);
-                }
-                else
-                {
-                    logger.debug('[DVP-MonitorRestAPI.GetConferenceListByCompany] - [%s] - PGSQL query success', reqId);
-                }
+                logger.debug('[DVP-MonitorRestAPI.GetConferenceListByCompany] - [%s] - PGSQL query success', reqId);
 
-                callback(err, confArr);
+                callback(undefined, confArr);
+            }).catch(function(err)
+            {
+                logger.error('[DVP-MonitorRestAPI.GetConferenceListByCompany] - [%s] - PGSQL query failed', reqId, err);
+                callback(err, tempArr);
+
             });
     }
     catch(ex)

@@ -5,14 +5,11 @@
   "main": "app.js",
   "dependencies": {
     "config": "^1.13.0",
-    "DVP-Common": "DuoSoftware/DVP-Common",
-    "DVP-DBModels": "DuoSoftware/DVP-DBModels",
+    "dvp-common": "^0.0.2",
+    "dvp-dbmodels": "^0.0.14",
     "node-uuid": "^1.4.3",
-    "pg": "^4.3.0",
-    "pg-hstore": "^2.3.2",
     "redis": "^0.12.1",
     "restify": "^3.0.1",
-    "sequelize": "^2.0.5",
     "stringify": "^3.1.0"
   },
   "devDependencies": {},

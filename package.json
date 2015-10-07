@@ -6,7 +6,7 @@
   "dependencies": {
     "config": "^1.13.0",
     "dvp-common": "^0.0.2",
-    "dvp-dbmodels": "^0.0.14",
+    "dvp-dbmodels": "^0.0.16",
     "node-uuid": "^1.4.3",
     "redis": "^0.12.1",
     "restify": "^3.0.1",

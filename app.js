@@ -295,7 +295,7 @@ var AddToConferenceUserArray = function(reqId, confId, confUserTags, confUserLis
     }
 };
 
-server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/SipRegistrations', function(req, res, next)
+server.get('/DVP/API/:version/MonitorRestAPI/SipRegistrations', function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     var userList = [];
@@ -377,7 +377,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/SipRegistrations', funct
 
 });
 
-server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/SipRegistrations/User/:user', function(req, res, next)
+server.get('/DVP/API/:version/MonitorRestAPI/SipRegistrations/User/:user', function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     try
@@ -452,7 +452,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/SipRegistrations/User/:u
 
 });
 
-server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/FSInstance/:instanceId/Calls/Count', function(req, res, next)
+server.get('/DVP/API/:version/MonitorRestAPI/FSInstance/:instanceId/Calls/Count', function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     try
@@ -495,7 +495,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/FSInstance/:instanceId/C
 
 });
 
-server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/FSInstance/:instanceId/ResourceUtilization', function(req, res, next)
+server.get('/DVP/API/:version/MonitorRestAPI/FSInstance/:instanceId/ResourceUtilization', function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     try
@@ -537,7 +537,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/FSInstance/:instanceId/R
 
 });
 
-server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/Cluster/:clusterId/ResourceUtilization', function(req, res, next)
+server.get('/DVP/API/:version/MonitorRestAPI/Cluster/:clusterId/ResourceUtilization', function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     var emptyArr = [];
@@ -590,7 +590,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/Cluster/:clusterId/Resou
 
 });
 
-server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/FSInstance/:instanceId/Channel/Count', function(req, res, next)
+server.get('/DVP/API/:version/MonitorRestAPI/FSInstance/:instanceId/Channel/Count', function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     try
@@ -634,7 +634,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/FSInstance/:instanceId/C
 
 });
 
-server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/Channel/:channelId', function(req, res, next)
+server.get('/DVP/API/:version/MonitorRestAPI/Channel/:channelId', function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     try
@@ -687,7 +687,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/Channel/:channelId', fun
 
 });
 
-server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/Channels', function(req, res, next)
+server.get('/DVP/API/:version/MonitorRestAPI/Channels', function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     var chanList = [];
@@ -760,7 +760,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/Channels', function(req,
 
 });
 
-server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/Conferences', function(req, res, next)
+server.get('/DVP/API/:version/MonitorRestAPI/Conferences', function(req, res, next)
 {
     var emptyConfList = [];
     var reqId = nodeUuid.v1();
@@ -835,7 +835,7 @@ server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/Conferences', function(r
 
 });
 
-server.get('/DVP/API/' + hostVersion + '/MonitorRestAPI/Conference/:roomName/Users', function(req, res, next)
+server.get('/DVP/API/:version/MonitorRestAPI/Conference/:roomName/Users', function(req, res, next)
 {
     var confUserList = [];
     var reqId = nodeUuid.v1();

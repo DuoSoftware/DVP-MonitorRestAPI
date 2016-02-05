@@ -4,7 +4,7 @@
   "description": "REST API for monitor system features",
   "main": "app.js",
   "dependencies": {
-    "dvp-common": "^0.0.2",
+    "dvp-common": "^0.0.16",
     "dvp-dbmodels": "^0.0.19",
     "config": "^1.13.0",
     "stringify": "^3.1.0",

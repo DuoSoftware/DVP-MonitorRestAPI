@@ -6,6 +6,9 @@ var redisHandler = require('./RedisHandler.js');
 var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 var nodeUuid = require('node-uuid');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
+var jwt = require('restify-jwt');
+var secret = require('dvp-common/Authentication/Secret.js');
+var authorization = require('dvp-common/Authentication/Authorization.js');
 
 var hostIp = config.Host.Ip;
 var hostPort = config.Host.Port;
@@ -19,6 +22,7 @@ var server = restify.createServer({
 server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
+server.use(jwt({secret: secret.Secret}));
 
 var AddToChannelArray = function(reqId, chanTags, chanList, callback)
 {
@@ -295,14 +299,19 @@ var AddToConferenceUserArray = function(reqId, confId, confUserTags, confUserLis
     }
 };
 
-server.get('/DVP/API/:version/MonitorRestAPI/SipRegistrations', function(req, res, next)
+server.get('/DVP/API/:version/MonitorRestAPI/SipRegistrations', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     var userList = [];
     try
     {
-        var companyId = 1;
-        var tenantId = 1;
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
 
         logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - HTTP Request Received', reqId);
 
@@ -377,14 +386,19 @@ server.get('/DVP/API/:version/MonitorRestAPI/SipRegistrations', function(req, re
 
 });
 
-server.get('/DVP/API/:version/MonitorRestAPI/SipRegistrations/User/:user', function(req, res, next)
+server.get('/DVP/API/:version/MonitorRestAPI/SipRegistrations/User/:user', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     try
     {
         var user = req.params.user;
-        var companyId = 1;
-        var tenantId = 1;
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
 
         logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByUser] - [%s] - HTTP Request Received - Params - User : %s', reqId, user);
 
@@ -452,7 +466,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/SipRegistrations/User/:user', funct
 
 });
 
-server.get('/DVP/API/:version/MonitorRestAPI/FSInstance/:instanceId/Calls/Count', function(req, res, next)
+server.get('/DVP/API/:version/MonitorRestAPI/FSInstance/:instanceId/Calls/Count', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     try
@@ -460,6 +474,14 @@ server.get('/DVP/API/:version/MonitorRestAPI/FSInstance/:instanceId/Calls/Count'
         var instanceId = req.params.instanceId;
 
         logger.debug('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - HTTP Request Received - Params - InstanceId : %s', reqId, instanceId);
+
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
 
         var callCountKey = instanceId + '#DVP_CALL_COUNT';
 
@@ -495,7 +517,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/FSInstance/:instanceId/Calls/Count'
 
 });
 
-server.get('/DVP/API/:version/MonitorRestAPI/FSInstance/:instanceId/ResourceUtilization', function(req, res, next)
+server.get('/DVP/API/:version/MonitorRestAPI/FSInstance/:instanceId/ResourceUtilization', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     try
@@ -503,6 +525,14 @@ server.get('/DVP/API/:version/MonitorRestAPI/FSInstance/:instanceId/ResourceUtil
         var instanceId = req.params.instanceId;
 
         logger.debug('[DVP-MonitorRestAPI.GetInstanceResourceUtilization] - [%s] - HTTP Request Received - Params - InstanceId : %s', reqId, instanceId);
+
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
 
         var instanceInfoKey = instanceId + '##DVP_CS_INSTANCE_INFO';
 
@@ -537,7 +567,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/FSInstance/:instanceId/ResourceUtil
 
 });
 
-server.get('/DVP/API/:version/MonitorRestAPI/Cluster/:clusterId/ResourceUtilization', function(req, res, next)
+server.get('/DVP/API/:version/MonitorRestAPI/Cluster/:clusterId/ResourceUtilization', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     var emptyArr = [];
@@ -546,6 +576,14 @@ server.get('/DVP/API/:version/MonitorRestAPI/Cluster/:clusterId/ResourceUtilizat
         var clusterId = req.params.clusterId;
 
         logger.debug('[DVP-MonitorRestAPI.GetClusterResourceUtilization] - [%s] - HTTP Request Received - Params - clusterId : %s', reqId, clusterId);
+
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
 
 
         logger.debug('[DVP-MonitorRestAPI.GetClusterResourceUtilization] - [%s] - Trying to get servers for cluster from db', reqId);
@@ -590,7 +628,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/Cluster/:clusterId/ResourceUtilizat
 
 });
 
-server.get('/DVP/API/:version/MonitorRestAPI/FSInstance/:instanceId/Channel/Count', function(req, res, next)
+server.get('/DVP/API/:version/MonitorRestAPI/FSInstance/:instanceId/Channel/Count', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     try
@@ -598,6 +636,14 @@ server.get('/DVP/API/:version/MonitorRestAPI/FSInstance/:instanceId/Channel/Coun
         var instanceId = req.params.instanceId;
 
         logger.debug('[DVP-MonitorRestAPI.GetChannelCount] - [%s] - HTTP Request Received GetChannelCount - Params - instanceId : %s', reqId, instanceId);
+
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
 
         var channelCountKey = instanceId + '#DVP_CHANNEL_COUNT';
 
@@ -634,7 +680,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/FSInstance/:instanceId/Channel/Coun
 
 });
 
-server.get('/DVP/API/:version/MonitorRestAPI/Channel/:channelId', function(req, res, next)
+server.get('/DVP/API/:version/MonitorRestAPI/Channel/:channelId', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     try
@@ -642,6 +688,14 @@ server.get('/DVP/API/:version/MonitorRestAPI/Channel/:channelId', function(req, 
         var channelId = req.params.channelId;
 
         logger.debug('[DVP-MonitorRestAPI.GetChannelById] - [%s] - HTTP Request Received GetChannelById - Params - channelId : %s', reqId, channelId);
+
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
         //Get Registration Details From Redis
 
         logger.debug('[DVP-MonitorRestAPI.GetChannelById] - [%s] - Trying to get channel details from redis - Key : %s', reqId, channelId);
@@ -687,14 +741,19 @@ server.get('/DVP/API/:version/MonitorRestAPI/Channel/:channelId', function(req, 
 
 });
 
-server.get('/DVP/API/:version/MonitorRestAPI/Channels', function(req, res, next)
+server.get('/DVP/API/:version/MonitorRestAPI/Channels', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     var chanList = [];
     try
     {
-        var companyId = 1;
-        var tenantId = 1;
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
 
         logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - HTTP Request Received GetChannelsByCompany', reqId);
 
@@ -760,14 +819,19 @@ server.get('/DVP/API/:version/MonitorRestAPI/Channels', function(req, res, next)
 
 });
 
-server.get('/DVP/API/:version/MonitorRestAPI/Conferences', function(req, res, next)
+server.get('/DVP/API/:version/MonitorRestAPI/Conferences', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
 {
     var emptyConfList = [];
     var reqId = nodeUuid.v1();
     try
     {
-        var companyId = 1;
-        var tenantId = 1;
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
 
         logger.debug('[DVP-MonitorRestAPI.GetConferenceRoomsByCompany] - [%s] - HTTP Request Received GetConferenceRoomsByCompany', reqId);
 
@@ -835,15 +899,21 @@ server.get('/DVP/API/:version/MonitorRestAPI/Conferences', function(req, res, ne
 
 });
 
-server.get('/DVP/API/:version/MonitorRestAPI/Conference/:roomName/Users', function(req, res, next)
+server.get('/DVP/API/:version/MonitorRestAPI/Conference/:roomName/Users', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
 {
     var confUserList = [];
     var reqId = nodeUuid.v1();
     try
     {
         var roomName = req.params.roomName;
-        var companyId = 1;
-        var tenantId = 1;
+
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
 
         logger.debug('[DVP-MonitorRestAPI.GetConferenceUsers] - [%s] - HTTP Request Received GetConferenceUsers - Params - roomName : %s', reqId, roomName);
 

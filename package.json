@@ -5,11 +5,12 @@
   "main": "app.js",
   "dependencies": {
     "config": "^1.13.0",
-    "dvp-common": "^0.0.2",
-    "dvp-dbmodels": "^0.0.16",
+    "dvp-common": "^0.0.16",
+    "dvp-dbmodels": "^0.0.19",
     "node-uuid": "^1.4.3",
     "redis": "^0.12.1",
     "restify": "^3.0.1",
+    "restify-jwt": "^0.4.0",
     "stringify": "^3.1.0"
   },
   "devDependencies": {},

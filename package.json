@@ -11,7 +11,9 @@
     "redis": "^0.12.1",
     "restify": "^3.0.1",
     "restify-jwt": "^0.4.0",
-    "stringify": "^3.1.0"
+    "stringify": "^3.1.0",
+    "request": "^2.69.0",
+    "string-format": "^0.5.0"
   },
   "devDependencies": {},
   "scripts": {

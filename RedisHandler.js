@@ -2,8 +2,8 @@ var redis = require("redis");
 var Config = require('config');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 
-var redisIp = Config.Redis.IpAddress;
-var redisPort = Config.Redis.Port;
+var redisIp = Config.Redis.ip;
+var redisPort = Config.Redis.port;
 
 var client = redis.createClient(redisPort, redisIp);
 

@@ -8,7 +8,7 @@
 
 #EXPOSE 8823
 
-FROM node:argon
+FROM node:5.10.0
 RUN git clone git://github.com/DuoSoftware/DVP-MonitorRestAPI.git /usr/local/src/monitorrestapi
 RUN cd /usr/local/src/monitorrestapi;
 WORKDIR /usr/local/src/monitorrestapi

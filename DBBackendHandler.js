@@ -75,6 +75,27 @@ var GetDomainByCompany = function(reqId, companyId, tenantId, callback)
     }
 };
 
+var GetAppByCompany = function(reqId, appId, companyId, tenantId, callback)
+{
+    try
+    {
+        logger.debug('[DVP-MonitorRestAPI.GetAppByCompany] - [%s] - Method Params - companyId : %s, tenantId : %s', reqId, companyId, tenantId);
+        dbModel.Application.find({where: [{CompanyId: companyId},{TenantId: tenantId}, {id: appId}]})
+            .then(function (app)
+            {
+                callback(undefined, app);
+            }).catch(function(err)
+            {
+                callback(err, undefined);
+            });
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-MonitorRestAPI.GetDomainByCompany] - [%s] - Exception occurred', reqId, ex);
+        callback(ex, undefined);
+    }
+};
+
 var GetConferenceListByCompany = function(reqId, companyId, tenantId, callback)
 {
     try
@@ -106,3 +127,4 @@ module.exports.GetDomainByCompany = GetDomainByCompany;
 module.exports.GetCallServersForCluster = GetCallServersForCluster;
 module.exports.GetConferenceListByCompany = GetConferenceListByCompany;
 module.exports.GetConferenceRoomWithCompany = GetConferenceRoomWithCompany;
+module.exports.GetAppByCompany = GetAppByCompany;

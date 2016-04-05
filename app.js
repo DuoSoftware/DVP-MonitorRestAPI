@@ -6,8 +6,8 @@ var redisHandler = require('./RedisHandler.js');
 var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 var nodeUuid = require('node-uuid');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
-var jwt = require('restify-jwt');
-var secret = require('dvp-common/Authentication/Secret.js');
+//var jwt = require('restify-jwt');
+//var secret = require('dvp-common/Authentication/Secret.js');
 var authorization = require('dvp-common/Authentication/Authorization.js');
 
 var hostIp = config.Host.Ip;
@@ -22,7 +22,142 @@ var server = restify.createServer({
 server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
-server.use(jwt({secret: secret.Secret}));
+//server.use(jwt({secret: secret.Secret}));
+
+var calls = {
+    "hgj3g-2jg3wj-3j2bb-3b3b32-3bbvz": {
+        "Channels" : {
+            "hgj3g-2jg3wj-3j2bb-3b3b32-3bbvz" : {"UUID": "sdsd", "OtherLegUuid": "fdfdf"}
+        }
+    },
+    "rerer-fc3c3ff-vre4343t-43tdfc-4tdfgfd": {
+        "Channels" : {
+            "rerer-fc3c3ff-vre4343t-43tdfc-4tdfgfd" : {"UUID": "sdsd", "OtherLegUuid": "fdfdf"},
+            "sdfdsr-frec3ff-vrfsdf343t-43dfsfc-4tfdsf" : {"UUID": "sdsd", "OtherLegUuid": "fdfdf"}
+        }
+    }
+};
+
+var FindLegsForCall = function(reqId, uuid, calls, callback)
+{
+    try
+    {
+        if(uuid)
+        {
+            calls[uuid] = {};
+            CollectLegsForCallId(reqId, uuid, {"Channels" : {}}, function(err, chanList)
+            {
+                if(!err)
+                {
+                    calls[uuid] = chanList;
+                }
+
+                callback(err, calls);
+            })
+        }
+        else
+        {
+            callback(err, calls);
+        }
+    }
+    catch(ex)
+    {
+        callback(err, calls);
+    }
+};
+
+var CreateOnGoingCallList = function(reqId, setId, callback)
+{
+    var calls = {};
+    try
+    {
+        redisHandler.GetFromSet(reqId, setId, function(err, callList)
+        {
+            if(err)
+            {
+                callback(err, callList);
+            }
+            else
+            {
+                var current = 0;
+                var count = callList.length;
+                for(i=0; i<callList.length; i++)
+                {
+                    FindLegsForCall(reqId, callList[i], calls, function(err, callList)
+                    {
+                        if(current < count)
+                        {
+                            current++;
+
+                            if(current >= count)
+                            {
+                                callback(undefined, calls);
+                            }
+                        }
+                        else
+                        {
+                            callback(undefined, calls);
+                        }
+
+                    })
+
+                }
+            }
+        })
+    }
+    catch(ex)
+    {
+        callback(ex, calls);
+
+    }
+}
+
+var CollectLegsForCallId = function(reqId, callUuid, chanObj, callback)
+{
+    //var chanObj = {"Channels" : {}};
+
+    try
+    {
+        redisHandler.GetFromHash(reqId, callUuid, function(err, legData)
+        {
+            if(err)
+            {
+                callback(err, chanObj)
+            }
+            else
+            {
+                if(legData)
+                {
+                    chanObj.Channels[callUuid] = legData;
+
+                    var otherLegUuid = legData["Other-Leg-Unique-ID"];
+
+                    if(otherLegUuid && !chanObj.Channels[otherLegUuid])
+                    {
+                        CollectLegsForCallId(reqId, otherLegUuid, chanObj, function(err, chanList)
+                        {
+                            callback(err, chanList);
+                        })
+                    }
+                    else
+                    {
+                        callback(undefined, chanObj)
+                    }
+
+                }
+                else
+                {
+                    callback(undefined, chanObj)
+                }
+            }
+        })
+    }
+    catch(ex)
+    {
+        callback(ex, chanObj)
+    }
+}
+
 
 var AddToChannelArray = function(reqId, chanTags, chanList, callback)
 {
@@ -483,7 +618,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/FSInstance/:instanceId/Calls/Count'
             throw new Error("Invalid company or tenant");
         }
 
-        var callCountKey = instanceId + '#DVP_CALL_COUNT';
+        var callCountKey = 'DVP_CALL_COUNT_INSTANCE:' + instanceId;
 
         logger.debug('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - Trying to get calls count object from redis - Key : %s', reqId, callCountKey);
         redisHandler.GetObject(reqId, callCountKey, function (err, callCount)
@@ -645,7 +780,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/FSInstance/:instanceId/Channel/Coun
             throw new Error("Invalid company or tenant");
         }
 
-        var channelCountKey = instanceId + '#DVP_CHANNEL_COUNT';
+        var channelCountKey = 'DVP_CHANNEL_COUNT_INSTANCE:' + instanceId;
 
         logger.debug('[DVP-MonitorRestAPI.GetChannelCount] - [%s] - Trying to get channel count from redis - Key : %s', reqId, channelCountKey);
 
@@ -757,53 +892,153 @@ server.get('/DVP/API/:version/MonitorRestAPI/Channels', authorization({resource:
 
         logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - HTTP Request Received GetChannelsByCompany', reqId);
 
-
-        dbHandler.GetDomainByCompany(reqId, companyId, tenantId, function (err, endUser)
+        var setKey = "CHANNELS:" + tenantId + ":" + companyId;
+        logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - Trying to get channels set for company from redis - Key : %s', reqId, setKey);
+        redisHandler.GetFromSet(reqId, setKey, function(err, chanTags)
         {
-            if(endUser && endUser.Domain)
+            if(chanTags && chanTags.length > 0)
             {
-                //Get Registration Details From Redis
-                var setKey = 'CHANNEL@' + endUser.Domain;
-                logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - Trying to get channels set for company from redis - Key : %s', reqId, setKey);
-                redisHandler.GetFromSet(reqId, setKey, function(err, chanTags)
+                //get all user hash sets from redis
+                AddToChannelArray(reqId, chanTags, chanList, function(err, arrRes)
                 {
-                    if(chanTags && chanTags.length > 0)
+                    if(err)
                     {
-                        //get all user hash sets from redis
-                        AddToChannelArray(reqId, chanTags, chanList, function(err, arrRes)
-                        {
-                            if(err)
-                            {
-                                logger.error('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - Exception thrown from redisHandler.AddToChannelArray', reqId, err);
-                                var jsonString = messageFormatter.FormatMessage(err, "", false, chanList);
-                                logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
-                                res.end(jsonString);
-                            }
-                            else
-                            {
-                                var jsonString = messageFormatter.FormatMessage(err, "", true, chanList);
-                                logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
-                                res.end(jsonString);
-                            }
-
-                        })
-                    }
-                    else
-                    {
+                        logger.error('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - Exception thrown from redisHandler.AddToChannelArray', reqId, err);
                         var jsonString = messageFormatter.FormatMessage(err, "", false, chanList);
                         logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
                         res.end(jsonString);
                     }
-                });
+                    else
+                    {
+                        var jsonString = messageFormatter.FormatMessage(err, "", true, chanList);
+                        logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                        res.end(jsonString);
+                    }
 
+                })
             }
             else
             {
-                var jsonString = messageFormatter.FormatMessage(err, "", true, chanList);
+                var jsonString = messageFormatter.FormatMessage(err, "", false, chanList);
                 logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
                 res.end(jsonString);
             }
         });
+
+        return next();
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - Exception occurred', reqId, ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "", true, chanList);
+        logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+server.get('/DVP/API/:version/MonitorRestAPI/Calls', function(req, res, next)
+{
+    var reqId = nodeUuid.v1();
+    var chanList = [];
+    try
+    {
+        var companyId = 1;
+        var tenantId = 1;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
+
+        logger.debug('[DVP-MonitorRestAPI.GetCallsByCompany] - [%s] - HTTP Request Received GetCallsByCompany', reqId);
+
+        var setKey = "CHANNELS:" + tenantId + ":" + companyId;
+
+        CreateOnGoingCallList(reqId, setKey, function(err, callList)
+        {
+            if(err)
+            {
+                logger.error('[DVP-MonitorRestAPI.GetCallsByCompany] - [%s] - Exception occurred', reqId, err);
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR Occurred", false, callList);
+                logger.debug('[DVP-MonitorRestAPI.GetCallsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(undefined, "Operation Successfull", true, callList);
+                logger.debug('[DVP-MonitorRestAPI.GetCallsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+        });
+
+        return next();
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - Exception occurred', reqId, ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "", true, chanList);
+        logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+server.get('/DVP/API/:version/MonitorRestAPI/Calls/Application/:appId', function(req, res, next)
+{
+    var reqId = nodeUuid.v1();
+    var appId = req.params.appId;
+    var chanList = [];
+    try
+    {
+        var companyId = 1;
+        var tenantId = 1;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
+
+        logger.debug('[DVP-MonitorRestAPI.GetCallsByAppId] - [%s] - HTTP Request Received GetCallsByCompany', reqId);
+
+        var setKey = "CHANNELS_APP:" + appId;
+
+        //validate app
+
+        dbHandler.GetAppByCompany(reqId, appId, companyId, tenantId, function(err, app)
+        {
+            if(app)
+            {
+                CreateOnGoingCallList(reqId, setKey, function(err, callList)
+                {
+                    if(err)
+                    {
+                        logger.error('[DVP-MonitorRestAPI.GetCallsByCompany] - [%s] - Exception occurred', reqId, err);
+                        var jsonString = messageFormatter.FormatMessage(err, "ERROR Occurred", false, callList);
+                        logger.debug('[DVP-MonitorRestAPI.GetCallsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                        res.end(jsonString);
+                    }
+                    else
+                    {
+                        var jsonString = messageFormatter.FormatMessage(undefined, "Operation Successfull", true, callList);
+                        logger.debug('[DVP-MonitorRestAPI.GetCallsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                        res.end(jsonString);
+                    }
+                });
+            }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "App not found", false, undefined);
+                logger.debug('[DVP-MonitorRestAPI.GetCallsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+        });
+
+
 
         return next();
     }

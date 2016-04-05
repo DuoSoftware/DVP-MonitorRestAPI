@@ -4,8 +4,13 @@ var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 
 var redisIp = Config.Redis.ip;
 var redisPort = Config.Redis.port;
+var redisPassword = Config.Redis.Password;
 
 var client = redis.createClient(redisPort, redisIp);
+
+client.auth(redisPassword, function (redisResp) {
+    console.log("Redis Auth Response : " + redisResp);
+});
 
 var SetObject = function(reqId, key, value, callback)
 {

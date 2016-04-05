@@ -27,5 +27,9 @@ module.exports = {
     "Ip":"0.0.0.0",
     "Port":"8823",
     "Version":"1.0.0.0"
+  },
+  "FreeSwitch":{
+    "userName":"freeswitch",
+    "password":"works"
   }
 };

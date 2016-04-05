@@ -1,2 +1,2 @@
 # DVP-MonitorRestAPI
-REST API for monitor system features
+REST API for monitor system status

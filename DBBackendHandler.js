@@ -75,6 +75,30 @@ var GetDomainByCompany = function(reqId, companyId, tenantId, callback)
     }
 };
 
+var GetSipPresenceByDomain = function(reqId, domain, callback)
+{
+    try
+    {
+        logger.debug('[DVP-MonitorRestAPI.GetDomainByCompany] - [%s] - Method Params - companyId : %s, tenantId : %s', reqId, companyId, tenantId);
+        dbModel.CloudEndUser.find({where: [{CompanyId: companyId},{TenantId: tenantId}]})
+            .then(function (endUser)
+            {
+                logger.debug('[DVP-MonitorRestAPI.GetDomainByCompany] - [%s] - PGSQL query success', reqId);
+
+                callback(undefined, endUser);
+            }).catch(function(err)
+            {
+                logger.error('[DVP-MonitorRestAPI.GetDomainByCompany] - [%s] - PGSQL query failed', reqId, err);
+                callback(err, undefined);
+            });
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-MonitorRestAPI.GetDomainByCompany] - [%s] - Exception occurred', reqId, ex);
+        callback(ex, undefined);
+    }
+};
+
 var GetAppByCompany = function(reqId, appId, companyId, tenantId, callback)
 {
     try
@@ -121,6 +145,42 @@ var GetConferenceListByCompany = function(reqId, companyId, tenantId, callback)
         logger.error('[DVP-MonitorRestAPI.GetConferenceListByCompany] - [%s] - Exception occurred', reqId, ex);
         callback(ex, undefined);
     }
+};
+
+var AddCacheUpdateNotification = function(companyId, tenantId, cacheNotificaton, callback)
+{
+    try
+    {
+        var cacheUpdate = dbModel.CacheUpdates.build({
+            ResourceType: cacheNotificaton.ResourceType,
+            ResourceUniqueId: cacheNotificaton.ResourceUniqueId,
+            CacheUpdateStatus: "CHANGED",
+            CompanyId: companyId,
+            TenantId: tenantId
+        });
+
+        cacheUpdate
+            .save()
+            .then(function (saveRes)
+            {
+                var recordId = cacheUpdate.id;
+                callback(undefined, recordId);
+
+            }).catch(function(err)
+            {
+                logger.error('[DVP-RuleService.AddInboundRule] PGSQL Insert inbound call rule with all attributes query failed', err);
+                callback(err, -1);
+            })
+        logger.debug('[DVP-MonitorRestAPI.GetConferenceListByCompany] - [%s] - Method Params - companyId : %s, tenantId : %s', reqId, companyId, tenantId);
+
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-MonitorRestAPI.AddCacheUpdateNotification] - [%s] - Exception occurred', reqId, ex);
+        callback(ex, undefined);
+    }
+
+
 };
 
 module.exports.GetDomainByCompany = GetDomainByCompany;

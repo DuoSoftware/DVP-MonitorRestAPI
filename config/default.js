@@ -11,16 +11,17 @@ module.exports = {
   "Security":
   {
     "ip" : "45.55.142.207",
-    "port": 6379,
+    "port": 6389,
     "user": "2332",
-    "password": "123"
+    "password": "DuoS123"
   },
 
   "Redis":
   {
-    "ip": "104.131.67.21",
+    "ip": "45.55.142.207",
     "port": 6389,
-    "Database": 0
+    "Database": 0,
+    "Password": "DuoS123"
 
   },
   "Host":{

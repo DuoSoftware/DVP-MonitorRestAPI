@@ -7,8 +7,8 @@ var redisHandler = require('./RedisHandler.js');
 var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 var nodeUuid = require('node-uuid');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
-//var jwt = require('restify-jwt');
-//var secret = require('dvp-common/Authentication/Secret.js');
+var jwt = require('restify-jwt');
+var secret = require('dvp-common/Authentication/Secret.js');
 var authorization = require('dvp-common/Authentication/Authorization.js');
 
 var hostIp = config.Host.Ip;
@@ -23,21 +23,7 @@ var server = restify.createServer({
 server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
-//server.use(jwt({secret: secret.Secret}));
-
-var calls = {
-    "hgj3g-2jg3wj-3j2bb-3b3b32-3bbvz": {
-        "Channels" : {
-            "hgj3g-2jg3wj-3j2bb-3b3b32-3bbvz" : {"UUID": "sdsd", "OtherLegUuid": "fdfdf"}
-        }
-    },
-    "rerer-fc3c3ff-vre4343t-43tdfc-4tdfgfd": {
-        "Channels" : {
-            "rerer-fc3c3ff-vre4343t-43tdfc-4tdfgfd" : {"UUID": "sdsd", "OtherLegUuid": "fdfdf"},
-            "sdfdsr-frec3ff-vrfsdf343t-43dfsfc-4tfdsf" : {"UUID": "sdsd", "OtherLegUuid": "fdfdf"}
-        }
-    }
-};
+server.use(jwt({secret: secret.Secret}));
 
 var FindLegsForCall = function(reqId, uuid, calls, callback)
 {
@@ -451,34 +437,34 @@ server.get('/DVP/API/:version/MonitorRestAPI/SipRegistrations', authorization({r
 
         logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - HTTP Request Received', reqId);
 
-        dbHandler.GetDomainByCompany(companyId, tenantId, function (err, endUser)
+        dbHandler.GetDomainByCompany(reqId, companyId, tenantId, function (err, endUser)
         {
             if(endUser && endUser.Domain)
             {
                 //Get Registration Details From Redis
-                logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - Trying to get tags for user reg - Key : SIPREG@%s', reqId, endUser.Domain);
-                redisHandler.GetFromSet(reqId, 'SIPREG@' + endUser.Domain, function(err, userTags)
+                logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - Trying to get tags for user reg - Key : SIPPRESENCE:%s', reqId, endUser.Domain);
+                redisHandler.GetKeys(reqId, 'SIPPRESENCE:' + endUser.Domain + ':*', function(err, userTags)
                 {
                     if(userTags && userTags.length > 0)
                     {
                         //get all user hash sets from redis
-                        AddToArray(reqId, userTags, userList, function(err, arrRes)
+
+                        redisHandler.MGetObjects(reqId, userTags, function(err, userList)
                         {
                             if(err)
                             {
-                                logger.error('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - Exception thrown from method AddToArray', reqId, err);
-                                var jsonString = messageFormatter.FormatMessage(err, "", false, arrRes);
+                                var jsonString = messageFormatter.FormatMessage(err, "", false, userList);
                                 logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
                                 res.end(jsonString);
                             }
                             else
                             {
-                                var jsonString = messageFormatter.FormatMessage(err, "", true, arrRes);
+                                var jsonString = messageFormatter.FormatMessage(err, "", true, userList);
                                 logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
                                 res.end(jsonString);
                             }
+                        });
 
-                        })
                     }
                     else
                     {
@@ -543,15 +529,14 @@ server.get('/DVP/API/:version/MonitorRestAPI/SipRegistrations/User/:user', autho
             if (endUser && endUser.Domain)
             {
                 //Get Registration Details From Redis
-                var tag = 'SIPUSER:' + user + "@" + endUser.Domain;
+                var tag = 'SIPPRESENCE:' + endUser.Domain + ":" + user;
 
                 logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByUser] - [%s] - Trying to get user reg hash - Key : %s', reqId, tag);
 
-                redisHandler.GetFromHash(reqId, tag, function (err, hashObj)
+                redisHandler.GetObject(reqId, tag, function (err, obj)
                 {
                     if(err)
                     {
-                        logger.error('[DVP-MonitorRestAPI.GetSipRegDetailsByUser] - [%s] - Exception thrown from method redisHandler.GetFromHash', reqId, err);
                         var jsonString = messageFormatter.FormatMessage(err, "", false, undefined);
                         logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByUser] - [%s] - API RESPONSE : %s', reqId, jsonString);
                         res.end(jsonString);
@@ -559,9 +544,9 @@ server.get('/DVP/API/:version/MonitorRestAPI/SipRegistrations/User/:user', autho
                     else
                     {
                         var sipUser = {
-                            SipUsername: hashObj.username,
-                            RegistrationStatus: hashObj.RegisterState,
-                            ExtraData: JSON.parse(hashObj.Data)
+                            SipUsername: obj.SipUsername,
+                            Domain: obj.Domain,
+                            Status: obj.Status
 
                         };
 
@@ -1325,6 +1310,36 @@ server.post('/DVP/API/:version/MonitorRestAPI/Dispatch/:channelId/threeway', aut
 });
 
 // ---------------------- Dispatch call operations ---------------------- \\
+
+
+// ---------------------- Veery configuration caching ------------------- //
+
+server.post('/DVP/API/:version/MonitorRestAPI/Caching', authorization({resource:"caching", action:"write"}), function(req, res, next)
+{
+    try
+    {
+        var cacheUpdateInfo = req.body;
+
+        if(cacheUpdateInfo && cacheUpdateInfo.ResourceType && cacheUpdateInfo.ResourceUniqueId)
+        {
+
+
+        }
+        else
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error('Insufficient data'), "Insufficient data", false, false);
+            logger.debug('[DVP-MonitorRestAPI.GetConferenceUsers] - API RESPONSE : %s', jsonString);
+            res.end(jsonString);
+        }
+
+    }
+    catch(ex)
+    {
+        var jsonString = messageFormatter.FormatMessage(ex, "ERROR OCCURRED", false, false);
+        logger.debug('[DVP-MonitorRestAPI.GetConferenceUsers] - API RESPONSE : %s', jsonString);
+        res.end(jsonString);
+    }
+});
 
 server.listen(hostPort, hostIp, function () {
     console.log('%s listening at %s', server.name, server.url);

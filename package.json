@@ -6,14 +6,14 @@
   "dependencies": {
     "config": "^1.13.0",
     "dvp-common": "^0.1.1",
-    "dvp-dbmodels": "^0.0.19",
+    "dvp-dbmodels": "^0.0.57",
     "node-uuid": "^1.4.3",
-    "redis": "^0.12.1",
+    "redis": "^2.6.0-2",
+    "request": "^2.69.0",
     "restify": "^3.0.1",
     "restify-jwt": "^0.4.0",
-    "stringify": "^3.1.0",
-    "request": "^2.69.0",
-    "string-format": "^0.5.0"
+    "string-format": "^0.5.0",
+    "stringify": "^3.1.0"
   },
   "devDependencies": {},
   "scripts": {

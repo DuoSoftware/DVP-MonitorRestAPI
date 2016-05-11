@@ -155,33 +155,36 @@ var GetFromHash = function(reqId, hashName, callback)
     }
 }
 
-var MGetObjects = function(reqId, keyArr, callback)
+
+
+var HMGetObjects = function(reqId, keyArr, callback)
 {
     try
     {
-        logger.debug('[DVP-MonitorRestAPI.MGetObjects] - [%s]', reqId);
+        logger.debug('[DVP-MonitorRestAPI.HMGetObjects] - [%s]', reqId);
         //var client = redis.createClient(redisPort, redisIp);
 
-        client.mget(keyArr, function(err, response)
+        client.hmget(keyArr, function(err, response)
         {
             if(err)
             {
-                logger.error('[DVP-MonitorRestAPI.MGetObjects] - [%s] - REDIS MGET failed', reqId, err);
+                logger.error('[DVP-MonitorRestAPI.HMGetObjects] - [%s] - REDIS MGET failed', reqId, err);
             }
             else
             {
-                logger.debug('[DVP-MonitorRestAPI.MGetObjects] - [%s] - REDIS MGET success', reqId);
+                logger.debug('[DVP-MonitorRestAPI.HMGetObjects] - [%s] - REDIS MGET success', reqId);
             }
+
             callback(err, response);
         });
 
     }
     catch(ex)
     {
-        logger.error('[DVP-MonitorRestAPI.MGetObjects] - [%s] - Exception occurred', reqId, ex);
+        logger.error('[DVP-MonitorRestAPI.HMGetObjects] - [%s] - Exception occurred', reqId, ex);
         callback(ex, undefined);
     }
-};
+}
 
 var GetKeys = function(reqId, pattern, callback)
 {
@@ -218,4 +221,4 @@ module.exports.GetFromSet = GetFromSet;
 module.exports.GetFromHash = GetFromHash;
 module.exports.GetObject = GetObject;
 module.exports.GetKeys = GetKeys;
-module.exports.MGetObjects = MGetObjects;
+module.exports.HMGetObjects = HMGetObjects;

@@ -37,7 +37,7 @@ var GetCallServersForCluster = function(reqId, clusterId, callback)
             {
                 logger.debug('[DVP-MonitorRestAPI.GetCallServersForCluster] - [%s] - PGSQL query success', reqId);
 
-                callback(err, cloudInfo);
+                callback(null, cloudInfo);
             }).catch(function(err)
             {
                 logger.error('[DVP-MonitorRestAPI.GetCallServersForCluster] - [%s] - PGSQL query failed', reqId, err);

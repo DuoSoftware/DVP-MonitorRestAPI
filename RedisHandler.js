@@ -157,14 +157,14 @@ var GetFromHash = function(reqId, hashName, callback)
 
 
 
-var HMGetObjects = function(reqId, keyArr, callback)
+var MGetObjects = function(reqId, keyArr, callback)
 {
     try
     {
         logger.debug('[DVP-MonitorRestAPI.HMGetObjects] - [%s]', reqId);
         //var client = redis.createClient(redisPort, redisIp);
 
-        client.hmget(keyArr, function(err, response)
+        client.mget(keyArr, function(err, response)
         {
             if(err)
             {
@@ -221,4 +221,4 @@ module.exports.GetFromSet = GetFromSet;
 module.exports.GetFromHash = GetFromHash;
 module.exports.GetObject = GetObject;
 module.exports.GetKeys = GetKeys;
-module.exports.HMGetObjects = HMGetObjects;
+module.exports.MGetObjects = MGetObjects;

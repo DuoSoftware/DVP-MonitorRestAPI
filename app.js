@@ -1583,13 +1583,13 @@ var AppendConferences = function(reqId, confList, confName, callback)
             else
             {
                 confList[confName] = {}
-                callback(err, confCountList);
+                callback(err, confList);
             }
         }
         else
         {
             confList[confName] = {};
-            callback(err, confCountList);
+            callback(err, confList);
         }
 
 

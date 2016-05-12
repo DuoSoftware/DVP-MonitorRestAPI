@@ -10,12 +10,10 @@ var GetConferenceRoomWithCompany = function(reqId, roomName, companyId, tenantId
         dbModel.Conference.find({where: [{CompanyId: companyId},{TenantId: tenantId},{ConferenceName: roomName}]})
             .then(function (conf)
             {
-                logger.debug('[DVP-MonitorRestAPI.GetConferenceRoomWithCompany] - [%s] - PGSQL query success', reqId);
-
                 callback(undefined, conf);
             }).catch(function(err)
             {
-                logger.error('[DVP-MonitorRestAPI.GetConferenceRoomWithCompany] - [%s] - PGSQL query failed', reqId, err);
+
                 callback(err, undefined);
             });
     }
@@ -130,12 +128,9 @@ var GetConferenceListByCompany = function(reqId, companyId, tenantId, callback)
         dbModel.Conference.findAll({where: [{CompanyId: companyId},{TenantId: tenantId}]})
             .then(function (confArr)
             {
-                logger.debug('[DVP-MonitorRestAPI.GetConferenceListByCompany] - [%s] - PGSQL query success', reqId);
-
                 callback(undefined, confArr);
             }).catch(function(err)
             {
-                logger.error('[DVP-MonitorRestAPI.GetConferenceListByCompany] - [%s] - PGSQL query failed', reqId, err);
                 callback(err, tempArr);
 
             });
@@ -182,6 +177,8 @@ var AddCacheUpdateNotification = function(companyId, tenantId, cacheNotificaton,
 
 
 };
+
+
 
 module.exports.GetDomainByCompany = GetDomainByCompany;
 module.exports.GetCallServersForCluster = GetCallServersForCluster;

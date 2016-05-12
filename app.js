@@ -25,37 +25,7 @@ server.use(restify.queryParser());
 server.use(restify.bodyParser());
 server.use(jwt({secret: secret.Secret}));
 
-var FindLegsForCall = function(reqId, uuid, calls, callback)
-{
-    try
-    {
-        if(uuid)
-        {
 
-                calls[uuid] = {};
-                CollectLegsForCallId(reqId, uuid, {"Channels" : {}}, function(err, chanList)
-                {
-                    if(!err)
-                    {
-
-                        calls[uuid] = chanList;
-                    }
-
-                    callback(err, calls);
-                })
-
-
-        }
-        else
-        {
-            callback(null, calls);
-        }
-    }
-    catch(ex)
-    {
-        callback(ex, calls);
-    }
-};
 
 var CreateOnGoingCallList = function(reqId, setId, callback)
 {
@@ -87,7 +57,7 @@ var CreateOnGoingCallList = function(reqId, setId, callback)
                                 var key = hash['Caller-Unique-ID'];
                                 arr[key] = hash;
                             }
-                            if(current < count)
+                            if(current <= count)
                             {
                                 current++;
 
@@ -613,14 +583,19 @@ server.get('/DVP/API/:version/MonitorRestAPI/SipRegistrations/User/:user', autho
                     }
                     else
                     {
-                        obj = JSON.parse(obj);
+                        var sipUser = {};
+                        if(obj)
+                        {
+                            obj = JSON.parse(obj);
 
-                        var sipUser = {
-                            SipUsername: obj.SipUsername,
-                            Domain: obj.Domain,
-                            Status: obj.Status
+                            sipUser = {
+                                SipUsername: obj.SipUsername,
+                                Domain: obj.Domain,
+                                Status: obj.Status
 
-                        };
+                            };
+                        }
+
 
                         var jsonString = messageFormatter.FormatMessage(err, "", true, sipUser);
                         logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByUser] - [%s] - API RESPONSE : %s', reqId, jsonString);
@@ -716,6 +691,55 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls/Count', authorization({resour
     try
     {
         logger.debug('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - HTTP Request Received', reqId);
+
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
+
+        var callCountKey = 'DVP_CALL_COUNT_COMPANY:' + tenantId + ':' + companyId;
+
+        logger.debug('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - Trying to get calls count object from redis - Key : %s', reqId, callCountKey);
+        redisHandler.GetObject(reqId, callCountKey, function (err, callCount)
+        {
+            if (err)
+            {
+                logger.error('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - Exception thrown from method redisHandler.GetObject', reqId, err);
+                var jsonString = messageFormatter.FormatMessage(err, "", false, 0);
+                logger.debug('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "", true, callCount);
+                logger.debug('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+
+
+        });
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - Exception occurred', reqId, ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "", false, 0);
+        logger.debug('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+server.get('/DVP/API/:version/MonitorRestAPI/Channels/Count', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
+{
+    var reqId = nodeUuid.v1();
+    try
+    {
+        logger.debug('[DVP-MonitorRestAPI.GetChannelsCount] - [%s] - HTTP Request Received', reqId);
 
         var companyId = req.user.company;
         var tenantId = req.user.tenant;
@@ -1425,14 +1449,13 @@ server.get('/DVP/API/:version/MonitorRestAPI/Conference/:roomName/Users', author
 server.get('/DVP/API/:version/MonitorRestAPI/Conference/:conferenceName/Calls/Count', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
 {
     var reqId = nodeUuid.v1();
-    logger.debug('[DVP-MonitorRestAPI.GetCallCountForConference] - [%s] - HTTP Request Received - params : %s', reqId);
+    var roomName = req.params.conferenceName;
+    logger.debug('[DVP-MonitorRestAPI.GetCallCountForConference] - [%s] - HTTP Request Received - params : %s', reqId, roomName);
 
     try
     {
         var companyId = req.user.company;
         var tenantId = req.user.tenant;
-
-        var roomName = req.params.conferenceName;
 
         if (!companyId || !tenantId)
         {
@@ -1445,6 +1468,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/Conference/:conferenceName/Calls/Co
             {
                 var jsonString = messageFormatter.FormatMessage(err, "", false, 0);
                 logger.debug('[DVP-MonitorRestAPI.GetCallCountForConference] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
             }
             else
             {
@@ -1456,11 +1480,13 @@ server.get('/DVP/API/:version/MonitorRestAPI/Conference/:conferenceName/Calls/Co
                         {
                             var jsonString = messageFormatter.FormatMessage(err, "Error Occurred", false, 0);
                             logger.debug('[DVP-MonitorRestAPI.GetCallCountForConference] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                            res.end(jsonString);
                         }
                         else
                         {
                             var jsonString = messageFormatter.FormatMessage(null, "Success", true, redisResp);
                             logger.debug('[DVP-MonitorRestAPI.GetCallCountForConference] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                            res.end(jsonString);
                         }
                     });
 
@@ -1469,12 +1495,11 @@ server.get('/DVP/API/:version/MonitorRestAPI/Conference/:conferenceName/Calls/Co
                 {
                     var jsonString = messageFormatter.FormatMessage(new Error('Conference not found'), "", false, 0);
                     logger.debug('[DVP-MonitorRestAPI.GetCallCountForConference] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                    res.end(jsonString);
                 }
             }
 
         });
-
-        return next();
     }
     catch(ex)
     {
@@ -1487,6 +1512,21 @@ server.get('/DVP/API/:version/MonitorRestAPI/Conference/:conferenceName/Calls/Co
 
 });
 
+var AppendConferenceCounts = function(reqId, confCountList, confName, callback)
+{
+    redisHandler.GetObject(reqId, 'CONFERENCE-COUNT:' + confName, function(err, redisObj)
+    {
+        if(redisObj)
+        {
+            confCountList[confName] = redisObj;
+        }
+
+        callback(err, confCountList);
+
+    });
+
+}
+
 server.get('/DVP/API/:version/MonitorRestAPI/Conference/Calls/Count', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
 {
     var reqId = nodeUuid.v1();
@@ -1496,8 +1536,6 @@ server.get('/DVP/API/:version/MonitorRestAPI/Conference/Calls/Count', authorizat
     {
         var companyId = req.user.company;
         var tenantId = req.user.tenant;
-
-        var roomName = req.params.conferenceName;
 
         if (!companyId || !tenantId)
         {
@@ -1510,36 +1548,44 @@ server.get('/DVP/API/:version/MonitorRestAPI/Conference/Calls/Count', authorizat
             {
                 var jsonString = messageFormatter.FormatMessage(err, "", false, null);
                 logger.debug('[DVP-MonitorRestAPI.GetCallsForConference] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
             }
             else
             {
                 if(confList)
                 {
-                    redisHandler.GetObject(reqId, 'CONFERENCE-COUNT:' + roomName, function(err, redisResp)
+                    var confCounts = {};
+                    var limit = confList.length;
+                    var current = 0;
+
+                    for(i=0; i<confList.length; i++)
                     {
-                        if(err)
+                        AppendConferenceCounts(reqId, confCounts, confList[i].ConferenceName, function(err, newList)
                         {
-                            var jsonString = messageFormatter.FormatMessage(err, "Error Occurred", false, 0);
-                            logger.debug('[DVP-MonitorRestAPI.GetCallsForConference] - [%s] - API RESPONSE : %s', reqId, jsonString);
-                        }
-                        else
-                        {
-                            var jsonString = messageFormatter.FormatMessage(null, "Success", true, redisResp);
-                            logger.debug('[DVP-MonitorRestAPI.GetCallsForConference] - [%s] - API RESPONSE : %s', reqId, jsonString);
-                        }
-                    });
+                            current++;
+
+                            if(current >= limit)
+                            {
+                                var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, confCounts);
+                                logger.debug('[DVP-MonitorRestAPI.GetCallsForConference] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                                res.end(jsonString);
+                            }
+
+                        })
+
+                    }
 
                 }
                 else
                 {
                     var jsonString = messageFormatter.FormatMessage(new Error('Conference not found'), "", false, 0);
                     logger.debug('[DVP-MonitorRestAPI.GetCallsForConference] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                    res.end(jsonString);
                 }
             }
 
         });
 
-        return next();
     }
     catch(ex)
     {

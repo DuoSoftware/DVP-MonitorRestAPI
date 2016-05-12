@@ -1520,8 +1520,79 @@ var AppendConferenceCounts = function(reqId, confCountList, confName, callback)
         {
             confCountList[confName] = redisObj;
         }
+        else
+        {
+            confCountList[confName] = 0;
+        }
 
         callback(err, confCountList);
+
+    });
+
+}
+
+var AppendConferenceUsers = function(reqId, confList, confName, confUser, callback)
+{
+
+    redisHandler.GetFromHash(reqId, 'CONFERENCE-USER:' + confUser, function(err, userDetails)
+    {
+        if(userDetails)
+        {
+            confList[confName] = userDetails;
+        }
+        else
+        {
+            confList[confName] = {};
+        }
+
+        callback(err, confList);
+
+    });
+
+}
+
+
+
+
+var AppendConferences = function(reqId, confList, confName, callback)
+{
+    redisHandler.GetFromSet(reqId, 'CONFERENCE-MEMBERS:' + confName, function(err, usersList)
+    {
+        if(usersList)
+        {
+            var usrCount = 0;
+            var usrLimit = usersList.length;
+
+            if(usrLimit)
+            {
+                for(i=0; i<usersList.length; i++)
+                {
+
+                    AppendConferenceUsers(reqId, confList, confName, usersList[i], function (err, confUsrList)
+                    {
+                        usrCount++;
+                        if(usrCount >= usrLimit)
+                        {
+                            callback(null, confList);
+                        }
+                    });
+
+
+                }
+            }
+            else
+            {
+                confList[confName] = {}
+                callback(err, confCountList);
+            }
+        }
+        else
+        {
+            confList[confName] = {};
+            callback(err, confCountList);
+        }
+
+
 
     });
 
@@ -1574,6 +1645,88 @@ server.get('/DVP/API/:version/MonitorRestAPI/Conference/Calls/Count', authorizat
                         })
 
                     }
+
+                }
+                else
+                {
+                    var jsonString = messageFormatter.FormatMessage(new Error('Conference not found'), "", false, 0);
+                    logger.debug('[DVP-MonitorRestAPI.GetCallsForConference] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                    res.end(jsonString);
+                }
+            }
+
+        });
+
+    }
+    catch(ex)
+    {
+        var jsonString = messageFormatter.FormatMessage(ex, "Error Occurred", false, -1);
+        logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+server.get('/DVP/API/:version/MonitorRestAPI/Conference/Calls', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
+{
+    var reqId = nodeUuid.v1();
+    logger.debug('[DVP-MonitorRestAPI.GetCallsForConference] - [%s] - HTTP Request Received - params : %s', reqId);
+
+    try
+    {
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
+
+        dbHandler.GetConferenceListByCompany(reqId, companyId, tenantId, function(err, confList)
+        {
+            if(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "", false, null);
+                logger.debug('[DVP-MonitorRestAPI.GetCallsForConference] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+                if(confList)
+                {
+                    var confInfo = {};
+                    var limit = confList.length;
+                    var current = 0;
+
+                    if(limit)
+                    {
+                        for(i=0; i<confList.length; i++)
+                        {
+                            AppendConferences(reqId, confInfo, confList[i].ConferenceName, function(err, newList)
+                            {
+                                current++;
+
+                                if(current >= limit)
+                                {
+                                    var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, confInfo);
+                                    logger.debug('[DVP-MonitorRestAPI.GetCallsForConference] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                                    res.end(jsonString);
+                                }
+
+                            })
+
+                        }
+                    }
+                    else
+                    {
+                        var jsonString = messageFormatter.FormatMessage(new Error('Conference not found'), "", false, 0);
+                        logger.debug('[DVP-MonitorRestAPI.GetCallsForConference] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                        res.end(jsonString);
+                    }
+
+
 
                 }
                 else

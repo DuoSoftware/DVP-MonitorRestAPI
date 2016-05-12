@@ -1538,6 +1538,7 @@ var AppendConferenceUsers = function(reqId, confList, confName, confUser, callba
     {
         if(userDetails)
         {
+            confList[confName] = {};
             confList[confName][confUser] = userDetails;
         }
         else

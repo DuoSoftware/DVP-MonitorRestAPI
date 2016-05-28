@@ -15,10 +15,20 @@ var hostIp = config.Host.Ip;
 var hostPort = config.Host.Port;
 var hostVersion = config.Host.Version;
 
+
 var server = restify.createServer({
     name: 'localhost',
     version: '1.0.0'
 });
+
+
+
+server.use(restify.CORS());
+server.use(restify.fullResponse());
+server.pre(restify.pre.userAgentConnection());
+
+
+restify.CORS.ALLOW_HEADERS.push('authorization');
 
 server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser());

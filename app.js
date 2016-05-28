@@ -749,22 +749,22 @@ server.get('/DVP/API/:version/MonitorRestAPI/Channels/Count', authorization({res
             throw new Error("Invalid company or tenant");
         }
 
-        var callCountKey = 'DVP_CALL_COUNT_COMPANY:' + tenantId + ':' + companyId;
+        var callCountKey = 'DVP_CHANNEL_COUNT_COMPANY:' + tenantId + ':' + companyId;
 
-        logger.debug('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - Trying to get calls count object from redis - Key : %s', reqId, callCountKey);
+        logger.debug('[DVP-MonitorRestAPI.GetChannelsCount] - [%s] - Trying to get calls count object from redis - Key : %s', reqId, callCountKey);
         redisHandler.GetObject(reqId, callCountKey, function (err, callCount)
         {
             if (err)
             {
-                logger.error('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - Exception thrown from method redisHandler.GetObject', reqId, err);
+                logger.error('[DVP-MonitorRestAPI.GetChannelsCount] - [%s] - Exception thrown from method redisHandler.GetObject', reqId, err);
                 var jsonString = messageFormatter.FormatMessage(err, "", false, 0);
-                logger.debug('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                logger.debug('[DVP-MonitorRestAPI.GetChannelsCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
                 res.end(jsonString);
             }
             else
             {
                 var jsonString = messageFormatter.FormatMessage(err, "", true, callCount);
-                logger.debug('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                logger.debug('[DVP-MonitorRestAPI.GetChannelsCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
                 res.end(jsonString);
             }
 
@@ -773,9 +773,9 @@ server.get('/DVP/API/:version/MonitorRestAPI/Channels/Count', authorization({res
     }
     catch(ex)
     {
-        logger.error('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - Exception occurred', reqId, ex);
+        logger.error('[DVP-MonitorRestAPI.GetChannelsCount] - [%s] - Exception occurred', reqId, ex);
         var jsonString = messageFormatter.FormatMessage(ex, "", false, 0);
-        logger.debug('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        logger.debug('[DVP-MonitorRestAPI.GetChannelsCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
         res.end(jsonString);
     }
 
@@ -1112,11 +1112,26 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls', authorization({resource:"sy
                     var otherLegUuid = hashList[key]['Other-Leg-Unique-ID'];
                     if(!otherLegUuid)
                     {
-                        callChannels.push(hashList[key]);
+                        //
 
-                        usedChanList[key] = key;
+                        var otherlegKey = otherLegChanList[key];
 
-                        calls[key] = callChannels;
+                        if(otherlegKey)
+                        {
+                            calls[otherlegKey].push(hashList[key]);
+                            usedChanList[key] = key;
+                        }
+                        else
+                        {
+                            callChannels.push(hashList[key]);
+
+                            usedChanList[key] = key;
+
+                            calls[key] = callChannels;
+                        }
+
+                        //
+
                     }
                     else
                     {

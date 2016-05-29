@@ -13,6 +13,7 @@
     "restify": "^3.0.1",
     "restify-jwt": "^0.4.0",
     "string-format": "^0.5.0",
+    "stringformat": "0.0.5",
     "stringify": "^3.1.0"
   },
   "devDependencies": {},

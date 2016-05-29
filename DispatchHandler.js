@@ -8,7 +8,8 @@ var config = require('config');
 var redisHandler = require('./RedisHandler.js');
 var dbmodel = require('dvp-dbmodels');
 var request = require('request');
-var format = require('string-format')
+var format = require('string-format');
+var nodeUuid = require('node-uuid');
 
 var getCallServerId = function(reqId, channelId,res){
 

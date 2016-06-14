@@ -64,7 +64,7 @@ var CreateOnGoingCallList = function(reqId, setId, callback)
                         {
                             if(hash)
                             {
-                                var key = hash['Caller-Unique-ID'];
+                                var key = hash['Unique-ID'];
                                 arr[key] = hash;
                             }
                             if(current <= count)

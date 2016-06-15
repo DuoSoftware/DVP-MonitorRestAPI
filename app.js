@@ -190,7 +190,10 @@ var AddToChannelArray = function(reqId, chanTags, chanList, callback)
                     //    CallType : hashObj["Call-Type"]
                     //};
 
-                    chanList.push(hashObj);
+                    if(hashObj)
+                    {
+                        chanList.push(hashObj);
+                    }
 
                     count++;
 

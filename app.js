@@ -1161,42 +1161,51 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls', authorization({resource:"sy
         {
             var calls = {};
 
-            //hashList = {
-            //    "1":{"Name": "www"},
-            //    "2":{"Name": "ttt", "OtherLegUuid": "3"},
-            //    "3":{"Name": "rrr", "OtherLegUuid": "2"},
-            //    "4":{"Name": "yyy", "OtherLegUuid": "6"},
-            //    "5":{"Name": "uuu", "OtherLegUuid": "6"},
-            //    "6":{"Name": "iii", "OtherLegUuid": "4"}
-            //};
+            //hashList = {"975509c0-32de-11e6-9ab6-a3fd683ee773":{"Channel-State":"CS_EXECUTE","Unique-ID":"975509c0-32de-11e6-9ab6-a3fd683ee773","FreeSWITCH-Switchname":"1","Channel-Name":"sofia/internal/charlie@df7jal23ls0d.invalid","Call-Direction":"outbound","Caller-Destination-Number":"charlie","Caller-Unique-ID":"975509c0-32de-11e6-9ab6-a3fd683ee773","variable_sip_auth_realm":"null","variable_dvp_app_id":"null","Caller-Caller-ID-Number":"59429dbb-0c36-4e49-9390-2fc6b416b44a","Channel-Create-Time":"","Other-Leg-Unique-ID":"59429dbb-0c36-4e49-9390-2fc6b416b44a","Channel-Call-State":"ACTIVE"},"59429dbb-0c36-4e49-9390-2fc6b416b44a":{"Channel-State":"CS_EXCHANGE_MEDIA","Unique-ID":"59429dbb-0c36-4e49-9390-2fc6b416b44a","FreeSWITCH-Switchname":"1","Channel-Name":"sofia/internal/bob@124.43.65.63:32940","Call-Direction":"outbound","Caller-Destination-Number":"bob","Caller-Unique-ID":"59429dbb-0c36-4e49-9390-2fc6b416b44a","variable_sip_auth_realm":"null","variable_dvp_app_id":"null","Caller-Caller-ID-Number":"18705056540","Channel-Create-Time":"2016-06-15T09:50:07.000Z","Channel-Call-State":"ACTIVE"},"7349e7ca-b88b-4821-8b19-0bdae0e6d5a1":{"Channel-State":"CS_SOFT_EXECUTE","Unique-ID":"7349e7ca-b88b-4821-8b19-0bdae0e6d5a1","FreeSWITCH-Switchname":"1","Channel-Name":"sofia/external/18705056540@45.55.184.114","Call-Direction":"inbound","Caller-Destination-Number":"94777400400","Caller-Unique-ID":"7349e7ca-b88b-4821-8b19-0bdae0e6d5a1","variable_sip_auth_realm":"null","variable_dvp_app_id":"null","Caller-Caller-ID-Number":"18705056540","Channel-Create-Time":"","Channel-Call-State":"ACTIVE","Application-Type":"HTTAPI","DVP-Call-Direction":"inbound","Bridge-State":"Bridged","Other-Leg-Unique-ID":"59429dbb-0c36-4e49-9390-2fc6b416b44a"}};
 
             var usedChanList = {};
             var otherLegChanList = {};
+
+
+            //// ALGORITHM ////
+
+            //Call List : Main Call Structure
+            //Other Leg List : OtherLeg as key and Mapping to Main Leg as ARRAY of Main Leg ID's
+            //Used Leg List : Leg as key and Main call struct key as value
 
             for(var key in hashList)
             {
                 if(!usedChanList[key])
                 {
+
+                    //NEW CHANNEL
                     var callChannels = [];
                     var otherLegUuid = hashList[key]['Other-Leg-Unique-ID'];
                     if(!otherLegUuid)
                     {
-                        //
+                        //CHANNEL HAS NO OTHER LEG
 
-                        var otherlegKey = otherLegChanList[key];
+                        var otherLegArr = otherLegChanList[key];
 
-                        if(otherlegKey)
+                        if(otherLegArr && otherLegArr.length > 0)
                         {
-                            calls[otherlegKey].push(hashList[key]);
-                            usedChanList[key] = key;
+                            //A PREVIOUS LEG IS IN MAIN LIST AND IT HAS TAGGED THIS LEG AS ITS OTHER LEG
+                            var callListKey = usedChanList[otherLegArr[0]];
+                            if(callListKey)
+                            {
+                                //GETTING MAIN LIST ID FROM THE PREVIOUS LEG WHICH HAS TAGGED THIS LEG AS ITS OTHER LEG - TO PUSH THIS LEG AT THE CORRECT INDEX
+                                calls[callListKey].push(hashList[key]);
+                                usedChanList[key] = callListKey;
+                            }
                         }
                         else
                         {
+                            //TOTALLY NEW LEG WITH NO OTHER LEG - ADDED AS THE FIRST ITEM IN MAIN LIST
                             callChannels.push(hashList[key]);
 
-                            usedChanList[key] = key;
-
                             calls[key] = callChannels;
+
+                            usedChanList[key] = key;
                         }
 
                         //
@@ -1204,34 +1213,61 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls', authorization({resource:"sy
                     }
                     else
                     {
+                        //OTHER LEG IS PRESENT FOR THIS LEG
 
                         if(usedChanList[otherLegUuid])
                         {
+                            //OTHER LEG OF THIS LEG HAS ALREADY BEEN PROCESSED THEREFORE NEED TO ADD THIS TO THE CORRECT POSITION IN MAIN LIST
                             var chanListId = usedChanList[otherLegUuid];
 
                             calls[chanListId].push(hashList[key]);
 
                             usedChanList[key] = chanListId;
 
-                            if(!otherLegChanList[otherLegUuid])
+                            //NEED TO MAP TO OTHER LEG LIST
+
+                            var mainLegIdListForOtherLeg = otherLegChanList[otherLegUuid];
+
+                            if(mainLegIdListForOtherLeg)
                             {
-                                otherLegChanList[otherLegUuid] = key;
+                                //ADD TO ARRAY
+                                otherLegChanList[otherLegUuid].push(key);
+
+                            }
+                            else
+                            {
+                                //CREATE ARRAY AND ADD
+                                otherLegChanList[otherLegUuid] = [];
+                                otherLegChanList[otherLegUuid].push(key);
                             }
 
                         }
                         else
                         {
-                            if(otherLegChanList[otherLegUuid])
+                            var mainLegIdListForOtherLeg = otherLegChanList[otherLegUuid];
+
+                            if(mainLegIdListForOtherLeg && mainLegIdListForOtherLeg.length > 0)
                             {
-                                var chanListId = otherLegChanList[otherLegUuid];
-                                calls[chanListId].push(hashList[key]);
+                                //ANOTHER LEG HAS ADDED THIS LEG'S OTHER LEG ID AS ITS OTHER LEG ID TOO, MAIN LEG HASN'T PROCESSED YET - STILL HAVE TO GROUP THE TWO LEGS TOGETHER
+
+                                var chanListId = otherLegChanList[otherLegUuid][0];
+
+                                var mainListKey = usedChanList[chanListId];
+                                calls[mainListKey].push(hashList[key]);
+
+                                otherLegChanList[otherLegUuid].push(key);
                             }
                             else
                             {
+                                //TOTALLY NEW LEG WITH NO OTHER LEG - ADDED AS THE FIRST ITEM IN MAIN LIST
                                 callChannels.push(hashList[key]);
                                 usedChanList[key] = key;
-                                otherLegChanList[otherLegUuid] = key;
                                 calls[key] = callChannels;
+
+
+                                otherLegChanList[otherLegUuid] = [];
+                                otherLegChanList[otherLegUuid].push(key);
+
                             }
 
                         }

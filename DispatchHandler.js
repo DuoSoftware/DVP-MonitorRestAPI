@@ -10,6 +10,7 @@ var dbmodel = require('dvp-dbmodels');
 var request = require('request');
 var format = require('stringformat');
 var nodeUuid = require('node-uuid');
+var util = require('util');
 
 var getCallServerId = function (reqId, channelId, res) {
 
@@ -139,7 +140,7 @@ var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
                                 } else {
                                     //var options = format("{{return_ring_ready=false,origination_uuid={0},origination_caller_id_number={1},DVP_ACTION_CAT={2},DVP_OPERATION_CAT=PRIVATE_USER,companyid={3},tenantid={4},Other-Leg-Unique-ID={5}}", reqId, channelId, dvpActionCat, companyId, tenantId, channelId);
 
-                                    var dialoption = format("{{return_ring_ready=false,origination_uuid={0},origination_caller_id_number={1},DVP_ACTION_CAT={2},DVP_OPERATION_CAT=PRIVATE_USER,companyid={3},tenantid={4},Other-Leg-Unique-ID={5}}}", reqId, channelId, dvpActionCat, companyId, tenantId, channelId);
+                                    var dialoption = format("return_ring_ready=false,origination_uuid={0},origination_caller_id_number={1},DVP_ACTION_CAT={2},DVP_OPERATION_CAT=PRIVATE_USER,companyid={3},tenantid={4},Other-Leg-Unique-ID={5}", reqId, channelId, dvpActionCat, companyId, tenantId, channelId);
 
                                     logger.debug('[DVP-MonitorRestAPI.CallDispatch] - [%s] - options : %s', reqId, dialoption);
 
@@ -162,7 +163,9 @@ var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
 
                                                 destination = tempURL ? format("user/{0}", tempURL) : format("user/{0}", destination);
 
-                                                var command = format("originate? {0}{1} {2}", dialoption, destination, data);
+                                                var command = util.format("originate? %s%s %s", dialoption, destination, data);
+
+                                                //var command = format("originate? {0}{1} {2}", dialoption, destination, data);
 
                                                 logger.debug('[DVP-MonitorRestAPI.CallDispatch] - [%s] - command : %s', reqId, command);
 

@@ -97,9 +97,9 @@ var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
 
     redisHandler.GetFromHash(reqId, channelId, function (err, hashObj) {
         if (err) {
-            logger.error('[DVP-MonitorRestAPI.GetChannelById] - [%s] - Exception thrown from redisHandler.GetObject', reqId, err);
+            logger.error('[DVP-MonitorRestAPI.CallDispatch] - [%s] - Exception thrown from redisHandler.GetObject', reqId, err);
             var jsonString = messageFormatter.FormatMessage(err, "", false, undefined);
-            logger.debug('[DVP-MonitorRestAPI.GetChannelById] - [%s] - API RESPONSE : %s', reqId, jsonString);
+            logger.debug('[DVP-MonitorRestAPI.CallDispatch] - [%s] - API RESPONSE : %s', reqId, jsonString);
             res.end(jsonString);
         }
         else {
@@ -107,7 +107,7 @@ var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
                 var callServerId = hashObj["FreeSWITCH-Switchname"];
                 dbmodel.CallServer.find({where: [{id: callServerId}, {Activate: true}]}).then(function (csData) {
                     if (csData) {
-                        logger.debug("DVP-ClusterConfiguration.EditCallServer id %d Found", reqId);
+                        logger.debug("DVP-MonitorRestAPI.CallDispatch id %d Found", reqId);
                         var ip = csData.InternalMainIP;
                         if (ip) {
                             var dvpActionCat = 'LISTEN';
@@ -138,6 +138,8 @@ var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
                                     res.end(instance);
                                 } else {
                                     var options = format("{{return_ring_ready=false,origination_uuid={0},origination_caller_id_number={1},DVP_ACTION_CAT={2},DVP_OPERATION_CAT=PRIVATE_USER,companyid={3},tenantid={4},Other-Leg-Unique-ID={5}}", reqId, channelId, dvpActionCat, companyId, tenantId, channelId);
+
+                                    logger.debug('[DVP-MonitorRestAPI.CallDispatch] - [%s] - options : %s', reqId, options);
 
                                     if (protocol.toLowerCase() == "user") {
 

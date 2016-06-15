@@ -139,9 +139,9 @@ var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
                                 } else {
                                     //var options = format("{{return_ring_ready=false,origination_uuid={0},origination_caller_id_number={1},DVP_ACTION_CAT={2},DVP_OPERATION_CAT=PRIVATE_USER,companyid={3},tenantid={4},Other-Leg-Unique-ID={5}}", reqId, channelId, dvpActionCat, companyId, tenantId, channelId);
 
-                                    var options = format("[return_ring_ready=false,origination_uuid={0},origination_caller_id_number={1},DVP_ACTION_CAT={2},DVP_OPERATION_CAT=PRIVATE_USER,companyid={3},tenantid={4},Other-Leg-Unique-ID={5}]", reqId, channelId, dvpActionCat, companyId, tenantId, channelId);
+                                    var dialoption = format("{{return_ring_ready=false,origination_uuid={0},origination_caller_id_number={1},DVP_ACTION_CAT={2},DVP_OPERATION_CAT=PRIVATE_USER,companyid={3},tenantid={4},Other-Leg-Unique-ID={5}}}", reqId, channelId, dvpActionCat, companyId, tenantId, channelId);
 
-                                    logger.debug('[DVP-MonitorRestAPI.CallDispatch] - [%s] - options : %s', reqId, options);
+                                    logger.debug('[DVP-MonitorRestAPI.CallDispatch] - [%s] - options : %s', reqId, dialoption);
 
                                     if (protocol.toLowerCase() == "user") {
 
@@ -162,7 +162,9 @@ var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
 
                                                 destination = tempURL ? format("user/{0}", tempURL) : format("user/{0}", destination);
 
-                                                var command = format("originate? {0}{1} {2}", options, destination, data);
+                                                var command = format("originate? {0}{1} {2}", dialoption, destination, data);
+
+                                                logger.debug('[DVP-MonitorRestAPI.CallDispatch] - [%s] - command : %s', reqId, command);
 
                                                 var options = {
                                                     method: 'GET',

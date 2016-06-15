@@ -110,11 +110,14 @@ var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
                         logger.debug("DVP-ClusterConfiguration.EditCallServer id %d Found", reqId);
                         var ip = csData.InternalMainIP;
                         if (ip) {
+                            var dvpActionCat = 'LISTEN';
                             var data = format("&eavesdrop({0})", crn);
                             if (bargeMethod.toLowerCase() == "barge") {
+                                dvpActionCat = 'BARGE';
                                 data = format("'queue_dtmf:w2@500,eavesdrop:{0}' inline", crn);
                             }
                             else if (bargeMethod.toLowerCase() == "threeway") {
+                                dvpActionCat = 'THREEWAY';
                                 data = format("'queue_dtmf:w3@500,eavesdrop:{0}' inline", crn);
                             }
 
@@ -134,7 +137,7 @@ var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
                                     var instance = messageFormatter.FormatMessage(error, "create_uuid", false, body);
                                     res.end(instance);
                                 } else {
-                                    var options = format("{{return_ring_ready=false,origination_uuid={0},origination_caller_id_number={1}}}", reqId, channelId);
+                                    var options = format("{{return_ring_ready=false,origination_uuid={0},origination_caller_id_number={1},DVP_ACTION_CAT={2},DVP_OPERATION_CAT=PRIVATE_USER,companyid={3},tenantid={4},Other-Leg-Unique-ID={5}}", reqId, channelId, dvpActionCat, companyId, tenantId, channelId);
 
                                     if (protocol.toLowerCase() == "user") {
 

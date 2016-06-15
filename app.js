@@ -179,18 +179,18 @@ var AddToChannelArray = function(reqId, chanTags, chanList, callback)
             {
                 if(count < len)
                 {
-                    var channelData =
-                    {
-                        ChannelState: hashObj["Channel-State"],
-                        FreeSwitchName: hashObj["FreeSWITCH-Switchname"],
-                        ChannelName: hashObj["Channel-Name"],
-                        CallDirection: hashObj["Call-Direction"],
-                        CallerDestinationNumber : hashObj["Caller-Destination-Number"],
-                        OtherLegUuid : hashObj["Other-Leg-Unique-ID"],
-                        CallType : hashObj["Call-Type"]
-                    };
+                    //var channelData =
+                    //{
+                    //    ChannelState: hashObj["Channel-State"],
+                    //    FreeSwitchName: hashObj["FreeSWITCH-Switchname"],
+                    //    ChannelName: hashObj["Channel-Name"],
+                    //    CallDirection: hashObj["Call-Direction"],
+                    //    CallerDestinationNumber : hashObj["Caller-Destination-Number"],
+                    //    OtherLegUuid : hashObj["Other-Leg-Unique-ID"],
+                    //    CallType : hashObj["Call-Type"]
+                    //};
 
-                    chanList.push(channelData);
+                    chanList.push(hashObj);
 
                     count++;
 
@@ -987,7 +987,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/Channel/:channelId', authorization(
             }
             else
             {
-                var channelData =
+                /*var channelData =
                 {
                     ChannelState: hashObj["Channel-State"],
                     FreeSwitchName: hashObj["FreeSWITCH-Switchname"],
@@ -996,9 +996,9 @@ server.get('/DVP/API/:version/MonitorRestAPI/Channel/:channelId', authorization(
                     CallerDestinationNumber : hashObj["Caller-Destination-Number"],
                     OtherLegUuid : hashObj["Other-Leg-Unique-ID"],
                     CallType : hashObj["Call-Type"]
-                };
+                };*/
 
-                var jsonString = messageFormatter.FormatMessage(err, "", true, channelData);
+                var jsonString = messageFormatter.FormatMessage(null, "Operation Successfull", true, hashObj);
                 logger.debug('[DVP-MonitorRestAPI.GetChannelById] - [%s] - API RESPONSE : %s', reqId, jsonString);
                 res.end(jsonString);
             }
@@ -1010,6 +1010,64 @@ server.get('/DVP/API/:version/MonitorRestAPI/Channel/:channelId', authorization(
     {
         logger.error('[DVP-MonitorRestAPI.GetChannelById] - [%s] - Exception occurred', reqId, ex);
         var jsonString = messageFormatter.FormatMessage(ex, "ERROR", false, undefined);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+server.post('/DVP/API/:version/MonitorRestAPI/ChannelsWithUuids', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
+{
+    var reqId = nodeUuid.v1();
+    var chanList = [];
+    try
+    {
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
+
+        var chanTags = req.body;
+
+        logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - HTTP Request Received GetChannelsByIdList', reqId);
+
+        if(chanTags && chanTags.length > 0)
+        {
+            //get all user hash sets from redis
+            AddToChannelArray(reqId, chanTags, chanList, function(err, arrRes)
+            {
+                if(err)
+                {
+                    logger.error('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - Exception thrown from redisHandler.AddToChannelArray', reqId, err);
+                    var jsonString = messageFormatter.FormatMessage(err, "", false, chanList);
+                    logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                    res.end(jsonString);
+                }
+                else
+                {
+                    var jsonString = messageFormatter.FormatMessage(err, "", true, chanList);
+                    logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                    res.end(jsonString);
+                }
+
+            })
+        }
+        else
+        {
+            var jsonString = messageFormatter.FormatMessage(null, "Operation Successfull", true, chanList);
+            logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+            res.end(jsonString);
+        }
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - Exception occurred', reqId, ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "Error occurred", false, chanList);
+        logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
         res.end(jsonString);
     }
 
@@ -1065,8 +1123,6 @@ server.get('/DVP/API/:version/MonitorRestAPI/Channels', authorization({resource:
                 res.end(jsonString);
             }
         });
-
-        return next();
     }
     catch(ex)
     {

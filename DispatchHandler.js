@@ -163,7 +163,7 @@ var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
 
                                                 destination = tempURL ? format("user/{0}", tempURL) : format("user/{0}", destination);
 
-                                                var command = util.format("originate? %s%s %s", dialoption, destination, data);
+                                                var command = util.format("originate? {%s}%s %s", dialoption, destination, data);
 
                                                 //var command = format("originate? {0}{1} {2}", dialoption, destination, data);
 

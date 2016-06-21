@@ -727,7 +727,13 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls/Count', authorization({resour
             }
             else
             {
-                var jsonString = messageFormatter.FormatMessage(err, "", true, callCount);
+
+                var jsonString = messageFormatter.FormatMessage(null, "Operation Successfull", true, callCount);
+                if(!callCount)
+                {
+                    jsonString = messageFormatter.FormatMessage(null, "Operation Successfull", true, 0);
+                }
+
                 logger.debug('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
                 res.end(jsonString);
             }
@@ -776,7 +782,12 @@ server.get('/DVP/API/:version/MonitorRestAPI/Channels/Count', authorization({res
             }
             else
             {
-                var jsonString = messageFormatter.FormatMessage(err, "", true, callCount);
+                var jsonString = messageFormatter.FormatMessage(null, "Operation Successfull", true, callCount);
+                if(!callCount)
+                {
+                    jsonString = messageFormatter.FormatMessage(null, "Operation Successfull", true, 0);
+                }
+
                 logger.debug('[DVP-MonitorRestAPI.GetChannelsCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
                 res.end(jsonString);
             }
@@ -1173,108 +1184,117 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls', authorization({resource:"sy
             //Other Leg List : OtherLeg as key and Mapping to Main Leg as ARRAY of Main Leg ID's
             //Used Leg List : Leg as key and Main call struct key as value
 
-            for(var key in hashList)
+            try
             {
-                if(!usedChanList[key])
+                for(var key in hashList)
                 {
-
-                    //NEW CHANNEL
-                    var callChannels = [];
-                    var otherLegUuid = hashList[key]['Other-Leg-Unique-ID'];
-                    if(!otherLegUuid)
+                    if(!usedChanList[key])
                     {
-                        //CHANNEL HAS NO OTHER LEG
 
-                        var otherLegArr = otherLegChanList[key];
-
-                        if(otherLegArr && otherLegArr.length > 0)
+                        //NEW CHANNEL
+                        var callChannels = [];
+                        var otherLegUuid = hashList[key]['Other-Leg-Unique-ID'];
+                        if(!otherLegUuid)
                         {
-                            //A PREVIOUS LEG IS IN MAIN LIST AND IT HAS TAGGED THIS LEG AS ITS OTHER LEG
-                            var callListKey = usedChanList[otherLegArr[0]];
-                            if(callListKey)
+                            //CHANNEL HAS NO OTHER LEG
+
+                            var otherLegArr = otherLegChanList[key];
+
+                            if(otherLegArr && otherLegArr.length > 0)
                             {
-                                //GETTING MAIN LIST ID FROM THE PREVIOUS LEG WHICH HAS TAGGED THIS LEG AS ITS OTHER LEG - TO PUSH THIS LEG AT THE CORRECT INDEX
-                                calls[callListKey].push(hashList[key]);
-                                usedChanList[key] = callListKey;
-                            }
-                        }
-                        else
-                        {
-                            //TOTALLY NEW LEG WITH NO OTHER LEG - ADDED AS THE FIRST ITEM IN MAIN LIST
-                            callChannels.push(hashList[key]);
-
-                            calls[key] = callChannels;
-
-                            usedChanList[key] = key;
-                        }
-
-                        //
-
-                    }
-                    else
-                    {
-                        //OTHER LEG IS PRESENT FOR THIS LEG
-
-                        if(usedChanList[otherLegUuid])
-                        {
-                            //OTHER LEG OF THIS LEG HAS ALREADY BEEN PROCESSED THEREFORE NEED TO ADD THIS TO THE CORRECT POSITION IN MAIN LIST
-                            var chanListId = usedChanList[otherLegUuid];
-
-                            calls[chanListId].push(hashList[key]);
-
-                            usedChanList[key] = chanListId;
-
-                            //NEED TO MAP TO OTHER LEG LIST
-
-                            var mainLegIdListForOtherLeg = otherLegChanList[otherLegUuid];
-
-                            if(mainLegIdListForOtherLeg)
-                            {
-                                //ADD TO ARRAY
-                                otherLegChanList[otherLegUuid].push(key);
-
-                            }
-                            else
-                            {
-                                //CREATE ARRAY AND ADD
-                                otherLegChanList[otherLegUuid] = [];
-                                otherLegChanList[otherLegUuid].push(key);
-                            }
-
-                        }
-                        else
-                        {
-                            var mainLegIdListForOtherLeg = otherLegChanList[otherLegUuid];
-
-                            if(mainLegIdListForOtherLeg && mainLegIdListForOtherLeg.length > 0)
-                            {
-                                //ANOTHER LEG HAS ADDED THIS LEG'S OTHER LEG ID AS ITS OTHER LEG ID TOO, MAIN LEG HASN'T PROCESSED YET - STILL HAVE TO GROUP THE TWO LEGS TOGETHER
-
-                                var chanListId = otherLegChanList[otherLegUuid][0];
-
-                                var mainListKey = usedChanList[chanListId];
-                                calls[mainListKey].push(hashList[key]);
-
-                                otherLegChanList[otherLegUuid].push(key);
+                                //A PREVIOUS LEG IS IN MAIN LIST AND IT HAS TAGGED THIS LEG AS ITS OTHER LEG
+                                var callListKey = usedChanList[otherLegArr[0]];
+                                if(callListKey)
+                                {
+                                    //GETTING MAIN LIST ID FROM THE PREVIOUS LEG WHICH HAS TAGGED THIS LEG AS ITS OTHER LEG - TO PUSH THIS LEG AT THE CORRECT INDEX
+                                    calls[callListKey].push(hashList[key]);
+                                    usedChanList[key] = callListKey;
+                                }
                             }
                             else
                             {
                                 //TOTALLY NEW LEG WITH NO OTHER LEG - ADDED AS THE FIRST ITEM IN MAIN LIST
                                 callChannels.push(hashList[key]);
-                                usedChanList[key] = key;
+
                                 calls[key] = callChannels;
 
-
-                                otherLegChanList[otherLegUuid] = [];
-                                otherLegChanList[otherLegUuid].push(key);
-
+                                usedChanList[key] = key;
                             }
 
+                            //
+
+                        }
+                        else
+                        {
+                            //OTHER LEG IS PRESENT FOR THIS LEG
+
+                            if(usedChanList[otherLegUuid])
+                            {
+                                //OTHER LEG OF THIS LEG HAS ALREADY BEEN PROCESSED THEREFORE NEED TO ADD THIS TO THE CORRECT POSITION IN MAIN LIST
+                                var chanListId = usedChanList[otherLegUuid];
+
+                                calls[chanListId].push(hashList[key]);
+
+                                usedChanList[key] = chanListId;
+
+                                //NEED TO MAP TO OTHER LEG LIST
+
+                                var mainLegIdListForOtherLeg = otherLegChanList[otherLegUuid];
+
+                                if(mainLegIdListForOtherLeg)
+                                {
+                                    //ADD TO ARRAY
+                                    otherLegChanList[otherLegUuid].push(key);
+
+                                }
+                                else
+                                {
+                                    //CREATE ARRAY AND ADD
+                                    otherLegChanList[otherLegUuid] = [];
+                                    otherLegChanList[otherLegUuid].push(key);
+                                }
+
+                            }
+                            else
+                            {
+                                var mainLegIdListForOtherLeg = otherLegChanList[otherLegUuid];
+
+                                if(mainLegIdListForOtherLeg && mainLegIdListForOtherLeg.length > 0)
+                                {
+                                    //ANOTHER LEG HAS ADDED THIS LEG'S OTHER LEG ID AS ITS OTHER LEG ID TOO, MAIN LEG HASN'T PROCESSED YET - STILL HAVE TO GROUP THE TWO LEGS TOGETHER
+
+                                    var chanListId = otherLegChanList[otherLegUuid][0];
+
+                                    var mainListKey = usedChanList[chanListId];
+                                    calls[mainListKey].push(hashList[key]);
+
+                                    otherLegChanList[otherLegUuid].push(key);
+                                }
+                                else
+                                {
+                                    //TOTALLY NEW LEG WITH NO OTHER LEG - ADDED AS THE FIRST ITEM IN MAIN LIST
+                                    callChannels.push(hashList[key]);
+                                    usedChanList[key] = key;
+                                    calls[key] = callChannels;
+
+
+                                    otherLegChanList[otherLegUuid] = [];
+                                    otherLegChanList[otherLegUuid].push(key);
+
+                                }
+
+                            }
                         }
                     }
+
                 }
+            }
+            catch(ex)
+            {
 
             }
+
+
 
             var jsonString = messageFormatter.FormatMessage(undefined, "Operation Successfull", true, calls);
             logger.debug('[DVP-MonitorRestAPI.GetCallsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);

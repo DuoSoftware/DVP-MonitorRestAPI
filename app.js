@@ -721,7 +721,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls/Count', authorization({resour
             if (err)
             {
                 logger.error('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - Exception thrown from method redisHandler.GetObject', reqId, err);
-                var jsonString = messageFormatter.FormatMessage(err, "", false, 0);
+                var jsonString = messageFormatter.FormatMessage(err, "", false, "0");
                 logger.debug('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
                 res.end(jsonString);
             }
@@ -731,7 +731,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls/Count', authorization({resour
                 var jsonString = messageFormatter.FormatMessage(null, "Operation Successfull", true, callCount);
                 if(!callCount)
                 {
-                    jsonString = messageFormatter.FormatMessage(null, "Operation Successfull", true, 0);
+                    jsonString = messageFormatter.FormatMessage(null, "Operation Successfull", true, "0");
                 }
 
                 logger.debug('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
@@ -744,7 +744,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls/Count', authorization({resour
     catch(ex)
     {
         logger.error('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - Exception occurred', reqId, ex);
-        var jsonString = messageFormatter.FormatMessage(ex, "", false, 0);
+        var jsonString = messageFormatter.FormatMessage(ex, "", false, "0");
         logger.debug('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
         res.end(jsonString);
     }
@@ -776,7 +776,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/Channels/Count', authorization({res
             if (err)
             {
                 logger.error('[DVP-MonitorRestAPI.GetChannelsCount] - [%s] - Exception thrown from method redisHandler.GetObject', reqId, err);
-                var jsonString = messageFormatter.FormatMessage(err, "", false, 0);
+                var jsonString = messageFormatter.FormatMessage(err, "", false, "0");
                 logger.debug('[DVP-MonitorRestAPI.GetChannelsCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
                 res.end(jsonString);
             }
@@ -785,7 +785,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/Channels/Count', authorization({res
                 var jsonString = messageFormatter.FormatMessage(null, "Operation Successfull", true, callCount);
                 if(!callCount)
                 {
-                    jsonString = messageFormatter.FormatMessage(null, "Operation Successfull", true, 0);
+                    jsonString = messageFormatter.FormatMessage(null, "Operation Successfull", true, "0");
                 }
 
                 logger.debug('[DVP-MonitorRestAPI.GetChannelsCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
@@ -798,7 +798,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/Channels/Count', authorization({res
     catch(ex)
     {
         logger.error('[DVP-MonitorRestAPI.GetChannelsCount] - [%s] - Exception occurred', reqId, ex);
-        var jsonString = messageFormatter.FormatMessage(ex, "", false, 0);
+        var jsonString = messageFormatter.FormatMessage(ex, "", false, "0");
         logger.debug('[DVP-MonitorRestAPI.GetChannelsCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
         res.end(jsonString);
     }

@@ -1637,7 +1637,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/Conference/:conferenceName/Calls/Co
                 }
                 else
                 {
-                    var jsonString = messageFormatter.FormatMessage(new Error('Conference not found'), "", false, 0);
+                    var jsonString = messageFormatter.FormatMessage(null, "Conference Not Found", true, 0);
                     logger.debug('[DVP-MonitorRestAPI.GetCallCountForConference] - [%s] - API RESPONSE : %s', reqId, jsonString);
                     res.end(jsonString);
                 }

@@ -1585,7 +1585,6 @@ server.get('/DVP/API/:version/MonitorRestAPI/Conference/:roomName/Users', author
 
 });
 
-
 server.get('/DVP/API/:version/MonitorRestAPI/Conference/:conferenceName/Calls/Count', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
 {
     var reqId = nodeUuid.v1();
@@ -1624,7 +1623,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/Conference/:conferenceName/Calls/Co
                         }
                         else
                         {
-                            var jsonString = messageFormatter.FormatMessage(null, "Success", true, redisResp);
+                            var jsonString = messageFormatter.FormatMessage(null, "Success", true, parseInt(redisResp));
                             logger.debug('[DVP-MonitorRestAPI.GetCallCountForConference] - [%s] - API RESPONSE : %s', reqId, jsonString);
                             res.end(jsonString);
                         }
@@ -1678,12 +1677,7 @@ var AppendConferenceUsers = function(reqId, confList, confName, confUser, callba
     {
         if(userDetails)
         {
-            confList[confName] = {};
-            confList[confName][confUser] = userDetails;
-        }
-        else
-        {
-            confList[confName] = {};
+            confList[confName].push(userDetails);
         }
 
         callback(err, confList);
@@ -1692,10 +1686,23 @@ var AppendConferenceUsers = function(reqId, confList, confName, confUser, callba
 
 }
 
+var AppendConferenceUsersToUsersList = function(reqId, usrList, confName, confUser, callback)
+{
 
+    redisHandler.GetFromHash(reqId, 'CONFERENCE-USER:' + confUser, function(err, userDetails)
+    {
+        if(userDetails)
+        {
+            usrList.push(userDetails);
+        }
 
+        callback(err, usrList);
 
-var AppendConferences = function(reqId, confList, confName, callback)
+    });
+
+}
+
+var AppendConferenceUserListOnly = function(reqId, usrList, confName, callback)
 {
     redisHandler.GetFromSet(reqId, 'CONFERENCE-MEMBERS:' + confName, function(err, usersList)
     {
@@ -1703,6 +1710,56 @@ var AppendConferences = function(reqId, confList, confName, callback)
         {
             var usrCount = 0;
             var usrLimit = usersList.length;
+
+
+
+            if(usrLimit)
+            {
+                for(i=0; i<usersList.length; i++)
+                {
+
+                    AppendConferenceUsersToUsersList(reqId, usrList, confName, usersList[i], function (err, confUsrList)
+                    {
+                        usrCount++;
+                        if(usrCount >= usrLimit)
+                        {
+                            callback(null, usrList);
+                        }
+                    });
+
+
+                }
+            }
+            else
+            {
+                callback(err, usrList);
+            }
+        }
+        else
+        {
+            callback(err, usrList);
+        }
+
+
+
+    });
+}
+
+
+
+
+var AppendConferences = function(reqId, confList, confName, callback)
+{
+
+    redisHandler.GetFromSet(reqId, 'CONFERENCE-MEMBERS:' + confName, function(err, usersList)
+    {
+        confList[confName] = [];
+        if(usersList)
+        {
+            var usrCount = 0;
+            var usrLimit = usersList.length;
+
+
 
             if(usrLimit)
             {
@@ -1891,6 +1948,45 @@ server.get('/DVP/API/:version/MonitorRestAPI/Conference/Calls', authorization({r
     return next();
 
 });
+
+server.get('/DVP/API/:version/MonitorRestAPI/Conference/:confName/RealTimeUsers', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
+{
+    var reqId = nodeUuid.v1();
+    logger.debug('[DVP-MonitorRestAPI.GetCallsForConference] - [%s] - HTTP Request Received - params : %s', reqId);
+
+    try
+    {
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+        var confName = req.params.confName;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
+
+        var usrArr = [];
+
+        AppendConferenceUserListOnly(reqId, usrArr, confName, function(err, newList)
+        {
+            var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, usrArr);
+            logger.debug('[DVP-MonitorRestAPI.GetCallsForConference] - [%s] - API RESPONSE : %s', reqId, jsonString);
+            res.end(jsonString);
+
+        })
+
+    }
+    catch(ex)
+    {
+        var jsonString = messageFormatter.FormatMessage(ex, "Error Occurred", false, usrArr);
+        logger.debug('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
 
 // ---------------------- Dispatch call operations ---------------------- \\
 

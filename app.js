@@ -1623,7 +1623,12 @@ server.get('/DVP/API/:version/MonitorRestAPI/Conference/:conferenceName/Calls/Co
                         }
                         else
                         {
-                            var jsonString = messageFormatter.FormatMessage(null, "Success", true, parseInt(redisResp));
+                            var resCount = 0;
+                            if(redisResp)
+                            {
+                                resCount = parseInt(redisResp);
+                            }
+                            var jsonString = messageFormatter.FormatMessage(null, "Success", true, resCount);
                             logger.debug('[DVP-MonitorRestAPI.GetCallCountForConference] - [%s] - API RESPONSE : %s', reqId, jsonString);
                             res.end(jsonString);
                         }

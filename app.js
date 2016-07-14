@@ -1168,7 +1168,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls', authorization({resource:"sy
 
         var setKey = "CHANNELS:" + tenantId + ":" + companyId;
 
-        CreateOnGoingCallList(reqId, setKey, function(err, hashList, req1)
+        CreateOnGoingCallList(req, reqId, setKey, function(err, hashList, req1)
         {
             var calls = {};
 

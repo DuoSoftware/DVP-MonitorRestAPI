@@ -37,7 +37,7 @@ server.use(jwt({secret: secret.Secret}));
 
 
 
-var CreateOnGoingCallList = function(req, reqId, setId, callback)
+var CreateOnGoingCallList = function(reqId, setId, callback)
 {
     var arr = {};
     try
@@ -73,12 +73,12 @@ var CreateOnGoingCallList = function(req, reqId, setId, callback)
 
                                 if(current >= count)
                                 {
-                                    callback(undefined, arr, req);
+                                    callback(undefined, arr);
                                 }
                             }
                             else
                             {
-                                callback(undefined, arr, req);
+                                callback(undefined, arr);
                             }
                         });
 
@@ -106,7 +106,7 @@ var CreateOnGoingCallList = function(req, reqId, setId, callback)
                 }
                 else
                 {
-                    callback(null, arr, req);
+                    callback(null, arr);
                 }
 
             }
@@ -114,7 +114,7 @@ var CreateOnGoingCallList = function(req, reqId, setId, callback)
     }
     catch(ex)
     {
-        callback(ex, arr, req);
+        callback(ex, arr);
 
     }
 }
@@ -1168,7 +1168,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls', authorization({resource:"sy
 
         var setKey = "CHANNELS:" + tenantId + ":" + companyId;
 
-        CreateOnGoingCallList(res, reqId, setKey, function(err, hashList, res1)
+        CreateOnGoingCallList(reqId, setKey, function(err, hashList)
         {
             var calls = {};
 
@@ -1298,8 +1298,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls', authorization({resource:"sy
 
             var jsonString = messageFormatter.FormatMessage(undefined, "Operation Successfull", true, calls);
             logger.debug('[DVP-MonitorRestAPI.GetCallsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
-            res1.write(jsonString);
-            res1.end();
+            res.end(jsonString);
 
 
 

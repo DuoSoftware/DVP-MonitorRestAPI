@@ -1168,7 +1168,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls', authorization({resource:"sy
 
         var setKey = "CHANNELS:" + tenantId + ":" + companyId;
 
-        CreateOnGoingCallList(req, reqId, setKey, function(err, hashList, req1)
+        CreateOnGoingCallList(res, reqId, setKey, function(err, hashList, res1)
         {
             var calls = {};
 
@@ -1298,8 +1298,8 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls', authorization({resource:"sy
 
             var jsonString = messageFormatter.FormatMessage(undefined, "Operation Successfull", true, calls);
             logger.debug('[DVP-MonitorRestAPI.GetCallsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
-            req1.write(jsonString);
-            req1.end();
+            res1.write(jsonString);
+            res1.end();
 
 
 

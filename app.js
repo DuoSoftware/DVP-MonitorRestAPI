@@ -1317,7 +1317,6 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls', authorization({resource:"sy
             //}
         });
 
-        return next();
     }
     catch(ex)
     {
@@ -1382,8 +1381,6 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls/Application/:appId', function
         });
 
 
-
-        return next();
     }
     catch(ex)
     {

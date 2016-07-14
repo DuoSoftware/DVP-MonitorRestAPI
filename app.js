@@ -23,13 +23,22 @@ var server = restify.createServer({
 
 
 
-server.use(restify.CORS());
-server.use(restify.fullResponse());
-server.pre(restify.pre.userAgentConnection());
+//server.use(restify.CORS());
+//server.use(restify.fullResponse());
+//server.pre(restify.pre.userAgentConnection());
+//
+//
+//restify.CORS.ALLOW_HEADERS.push('authorization');
+//
+//server.use(restify.acceptParser(server.acceptable));
+//server.use(restify.queryParser());
+//server.use(restify.bodyParser());
+//server.use(jwt({secret: secret.Secret}));
 
 
 restify.CORS.ALLOW_HEADERS.push('authorization');
-
+server.use(restify.CORS());
+server.use(restify.fullResponse());
 server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
@@ -1798,7 +1807,7 @@ var AppendConferences = function(reqId, confList, confName, callback)
 
 }
 
-server.get('/DVP/API/:version/MonitorRestAPI/Conference/Calls/Count', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
+server.get('/DVP/API/:version/MonitorRestAPI/Conference/CallsFDFD/Countfsdfsd', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     logger.debug('[DVP-MonitorRestAPI.GetCallsForConference] - [%s] - HTTP Request Received - params : %s', reqId);
@@ -1869,7 +1878,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/Conference/Calls/Count', authorizat
 
 });
 
-server.get('/DVP/API/:version/MonitorRestAPI/Conference/Calls', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
+server.get('/DVP/API/:version/MonitorRestAPI/Conference/Callsfdsf', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     logger.debug('[DVP-MonitorRestAPI.GetCallsForConference] - [%s] - HTTP Request Received - params : %s', reqId);

@@ -37,7 +37,7 @@ server.use(jwt({secret: secret.Secret}));
 
 
 
-var CreateOnGoingCallList = function(reqId, setId, callback)
+var CreateOnGoingCallList = function(req, reqId, setId, callback)
 {
     var arr = {};
     try
@@ -73,12 +73,12 @@ var CreateOnGoingCallList = function(reqId, setId, callback)
 
                                 if(current >= count)
                                 {
-                                    callback(undefined, arr);
+                                    callback(undefined, arr, req);
                                 }
                             }
                             else
                             {
-                                callback(undefined, arr);
+                                callback(undefined, arr, req);
                             }
                         });
 
@@ -106,7 +106,7 @@ var CreateOnGoingCallList = function(reqId, setId, callback)
                 }
                 else
                 {
-                    callback(null, arr);
+                    callback(null, arr, req);
                 }
 
             }
@@ -114,7 +114,7 @@ var CreateOnGoingCallList = function(reqId, setId, callback)
     }
     catch(ex)
     {
-        callback(ex, arr);
+        callback(ex, arr, req);
 
     }
 }
@@ -1168,7 +1168,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls', authorization({resource:"sy
 
         var setKey = "CHANNELS:" + tenantId + ":" + companyId;
 
-        CreateOnGoingCallList(reqId, setKey, function(err, hashList)
+        CreateOnGoingCallList(reqId, setKey, function(err, hashList, req1)
         {
             var calls = {};
 
@@ -1298,7 +1298,8 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls', authorization({resource:"sy
 
             var jsonString = messageFormatter.FormatMessage(undefined, "Operation Successfull", true, calls);
             logger.debug('[DVP-MonitorRestAPI.GetCallsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
-            res.end(jsonString);
+            req1.write(jsonString);
+            req1.end();
 
 
 

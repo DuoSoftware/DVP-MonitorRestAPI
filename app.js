@@ -1807,7 +1807,7 @@ var AppendConferences = function(reqId, confList, confName, callback)
 
 }
 
-server.get('/DVP/API/:version/MonitorRestAPI/Conference/CallsFDFD/Countfsdfsd', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
+server.get('/DVP/API/:version/MonitorRestAPI/Conference/Calls/Count', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     logger.debug('[DVP-MonitorRestAPI.GetCallsForConference] - [%s] - HTTP Request Received - params : %s', reqId);
@@ -1878,7 +1878,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/Conference/CallsFDFD/Countfsdfsd', 
 
 });
 
-server.get('/DVP/API/:version/MonitorRestAPI/Conference/Callsfdsf', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
+server.get('/DVP/API/:version/MonitorRestAPI/Conference/Calls', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     logger.debug('[DVP-MonitorRestAPI.GetCallsForConference] - [%s] - HTTP Request Received - params : %s', reqId);

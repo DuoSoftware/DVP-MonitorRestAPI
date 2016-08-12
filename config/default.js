@@ -20,8 +20,8 @@ module.exports = {
   {
     "ip": "45.55.142.207",
     "port": 6389,
-    "Database": 0,
-    "Password": "DuoS123"
+    "db": 9,
+    "password": "DuoS123"
 
   },
   "Host":{

@@ -49,6 +49,28 @@ var GetCallServersForCluster = function(reqId, clusterId, callback)
     }
 };
 
+var GetSipUser = function(reqId, username, domain, companyId, tenantId, callback)
+{
+    try
+    {
+
+        dbModel.SipUACEndpoint.find({where: [{SipUsername: username, CompanyId: companyId, TenantId: tenantId}], include: [{model: dbModel.CloudEndUser, as: 'CloudEndUser', where:[{Domain: domain}]}]})
+            .then(function (usr)
+            {
+                return callback(null, usr);
+
+            }).catch(function(err)
+            {
+                return callback(err, null);
+            });
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-MonitorRestAPI.GetSipUser] - [%s] - Exception occurred', reqId, ex);
+        callback(ex, null);
+    }
+};
+
 var GetDomainByCompany = function(reqId, companyId, tenantId, callback)
 {
     try
@@ -185,3 +207,4 @@ module.exports.GetCallServersForCluster = GetCallServersForCluster;
 module.exports.GetConferenceListByCompany = GetConferenceListByCompany;
 module.exports.GetConferenceRoomWithCompany = GetConferenceRoomWithCompany;
 module.exports.GetAppByCompany = GetAppByCompany;
+module.exports.GetSipUser = GetSipUser;

@@ -2097,6 +2097,7 @@ server.post('/DVP/API/:version/MonitorRestAPI/BindResourceToVeeryAccount', autho
     {
         var companyId = req.user.company;
         var tenantId = req.user.tenant;
+        var iss = req.user.iss;
 
         if (!companyId || !tenantId)
         {
@@ -2104,9 +2105,8 @@ server.post('/DVP/API/:version/MonitorRestAPI/BindResourceToVeeryAccount', autho
         }
 
         var sipUri = req.body.SipURI;
-        var resourceId = req.body.ResourceId;
 
-        if(sipUri)
+        if(sipUri && iss)
         {
             var sipUriSplit = sipUri.split('@');
 
@@ -2122,7 +2122,7 @@ server.post('/DVP/API/:version/MonitorRestAPI/BindResourceToVeeryAccount', autho
                         var obj = {
                             SipURI: sipUri,
                             Context: sipUser.ContextId,
-                            ResourceId : resourceId,
+                            Issuer : iss,
                             CompanyId : companyId,
                             TenantId : tenantId
                         };

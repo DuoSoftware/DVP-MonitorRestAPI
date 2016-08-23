@@ -464,7 +464,7 @@ var OtherLegHandler = function(reqId, calls, usedChanList, callChannels, hashLis
         {
             if(usedChanList.indexOf(hashObj.OtherLegUuid))
             {
-                calls
+
             }
             var tempHashObj = hashList[hashObj.OtherLegUuid];
             OtherLegHandler(reqId, calls, usedChanList, callChannels, hashList, tempHashObj, hashObj.OtherLegUuid);
@@ -2117,7 +2117,7 @@ server.post('/DVP/API/:version/MonitorRestAPI/BindResourceToVeeryAccount', autho
                     if(sipUser && sipUser.ContextId)
                     {
                         //Add Object To Redis
-                        var key = 'SIPUSER_RESOURCE_MAP:' + sipUri;
+                        var key = 'SIPUSER_RESOURCE_MAP:' + tenantId + ':' + companyId + ':' + sipUriSplit[0];
 
                         var obj = {
                             SipURI: sipUri,

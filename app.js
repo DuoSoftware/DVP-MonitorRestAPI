@@ -2105,8 +2105,9 @@ server.post('/DVP/API/:version/MonitorRestAPI/BindResourceToVeeryAccount', autho
         }
 
         var sipUri = req.body.SipURI;
+        var resourceId = req.body.ResourceId;
 
-        if(sipUri && iss)
+        if(sipUri && iss && resourceId)
         {
             var sipUriSplit = sipUri.split('@');
 
@@ -2124,7 +2125,8 @@ server.post('/DVP/API/:version/MonitorRestAPI/BindResourceToVeeryAccount', autho
                             Context: sipUser.ContextId,
                             Issuer : iss,
                             CompanyId : companyId,
-                            TenantId : tenantId
+                            TenantId : tenantId,
+                            ResourceId: resourceId
                         };
 
                         redisHandler.SetObject(reqId, key, JSON.stringify(obj), function(err, result)

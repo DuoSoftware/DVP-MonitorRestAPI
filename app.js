@@ -2107,6 +2107,8 @@ server.post('/DVP/API/:version/MonitorRestAPI/BindResourceToVeeryAccount', autho
         var sipUri = req.body.SipURI;
         var resourceId = req.body.ResourceId;
 
+        logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - HTTP Request Received : resource : %s', reqId, resourceId);
+
         if(sipUri && iss && resourceId)
         {
             var sipUriSplit = sipUri.split('@');

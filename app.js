@@ -863,12 +863,19 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls/Count', authorization({resour
         var companyId = req.user.company;
         var tenantId = req.user.tenant;
 
+        var direction = req.query.direction;
+
         if (!companyId || !tenantId)
         {
             throw new Error("Invalid company or tenant");
         }
 
         var callCountKey = 'DVP_CALL_COUNT_COMPANY:' + tenantId + ':' + companyId;
+
+        if(direction)
+        {
+            callCountKey = 'DVP_CALL_COUNT_COMPANY_DIR:' + tenantId + ':' + companyId + ':' + direction;
+        }
 
         logger.debug('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - Trying to get calls count object from redis - Key : %s', reqId, callCountKey);
         redisHandler.GetObject(reqId, callCountKey, function (err, callCount)

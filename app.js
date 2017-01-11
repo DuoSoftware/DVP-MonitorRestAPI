@@ -2088,6 +2088,56 @@ server.post('/DVP/API/:version/MonitorRestAPI/Dispatch/:channelId/threeway', aut
 
 });
 
+server.post('/DVP/API/:version/MonitorRestAPI/Dispatch/:channelId/disconnect', authorization({resource:"Dispatch", action:"write"}), function(req, res, next)
+{
+    try {
+
+        logger.info('[DVP-CallDisconnect] - [HTTP]  - Request received');
+
+        if (!req.user ||!req.user.tenant || !req.user.company)
+            throw new Error("invalid tenant or company.");
+
+        var tenantId = req.user.tenant;
+        var companyId = req.user.company;
+
+        var reqId = nodeUuid.v1();
+        var channelId = req.params.channelId;
+
+        dispatchHandler.callDisconnect(reqId, channelId, companyId, tenantId)
+            .then(function(resp)
+            {
+                if(resp)
+                {
+                    var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, resp);
+                    logger.debug('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                    res.end(jsonString);
+                }
+                else
+                {
+                    var jsonString = messageFormatter.FormatMessage(new Error('Call Disconnect Error'), "ERROR", false, resp);
+                    logger.debug('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                    res.end(jsonString);
+                }
+            })
+            .catch(function(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "EXCEPTION", false, false);
+                logger.error('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                res.end(jsonString);
+            });
+
+    }
+    catch (ex) {
+
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, false);
+        logger.error('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
 // ---------------------- Dispatch call operations ---------------------- \\
 
 
@@ -2189,6 +2239,8 @@ server.post('/DVP/API/:version/MonitorRestAPI/BindResourceToVeeryAccount', autho
     return next();
 
 });
+
+
 
 ////////////////////////////////////////
 

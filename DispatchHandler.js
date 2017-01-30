@@ -11,6 +11,7 @@ var request = require('request');
 var format = require('stringformat');
 var nodeUuid = require('node-uuid');
 var util = require('util');
+var Promise = require('bluebird');
 
 var getCallServerId = function (reqId, channelId, res) {
 
@@ -88,6 +89,90 @@ var getCallServerId = function (reqId, channelId, res) {
 
 };
 
+var callDisconnect = function(reqId, channelId, companyId, tenantId)
+{
+    return new Promise(function(fulfill, reject)
+    {
+        redisHandler.GetFromHash(reqId, channelId, function (err, hashObj)
+        {
+            if (err)
+            {
+                reject(err);
+            }
+            else
+            {
+                if(hashObj)
+                {
+                    if(hashObj["DVP-CompanyId"] && hashObj["DVP-TenantId"] && hashObj["DVP-CompanyId"] === companyId && hashObj["DVP-TenantId"] === tenantId)
+                    {
+                        var callServerId = hashObj["FreeSWITCH-Switchname"];
+                        dbmodel.CallServer.find({where: [{id: callServerId}, {Activate: true}]})
+                            .then(function (csData)
+                            {
+                                if(csData)
+                                {
+                                    var ip = csData.InternalMainIP;
+                                    if (ip)
+                                    {
+                                        var options = {
+                                            method: 'GET',
+                                            uri: "http://" + ip + ":8080/webapi/uuid_kill?" + channelId,
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'Accept': 'application/json',
+                                                'Authorization': 'Basic ' + new Buffer(config.FreeSwitch.userName + ':' + config.FreeSwitch.password).toString('base64')
+                                            }
+                                        };
+
+                                        request(options, function (error, response, body)
+                                        {
+                                            if (error)
+                                            {
+                                                reject(error);
+                                            }
+                                            else
+                                            {
+                                                fulfill(true);
+                                            }
+                                        });
+
+                                    }
+                                    else
+                                    {
+                                        reject(new Error('Call server ip not set'));
+
+                                    }
+
+                                }
+                                else
+                                {
+                                    reject(new Error('Cannot find a call server for call'));
+                                }
+
+                            })
+                            .catch(function(err)
+                            {
+                                reject(err);
+                            });
+
+                    }
+                    else
+                    {
+                        reject(new Error('Company validation failed'));
+                    }
+
+                }
+                else
+                {
+                    reject(new Error('Call not found for channel id'));
+                }
+            }
+        });
+
+    })
+
+};
+
 var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
 
     var reqId = nodeUuid.v1();
@@ -97,54 +182,69 @@ var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
     var destination = req.body.destination;
 
     redisHandler.GetFromHash(reqId, channelId, function (err, hashObj) {
-        if (err) {
+        if (err)
+        {
             logger.error('[DVP-MonitorRestAPI.CallDispatch] - [%s] - Exception thrown from redisHandler.GetObject', reqId, err);
             var jsonString = messageFormatter.FormatMessage(err, "", false, undefined);
             logger.debug('[DVP-MonitorRestAPI.CallDispatch] - [%s] - API RESPONSE : %s', reqId, jsonString);
             res.end(jsonString);
         }
-        else {
-            if (hashObj) {
+        else
+        {
+            if (hashObj)
+            {
                 var callServerId = hashObj["FreeSWITCH-Switchname"];
-                dbmodel.CallServer.find({where: [{id: callServerId}, {Activate: true}]}).then(function (csData) {
-                    if (csData) {
+                dbmodel.CallServer.find({where: [{id: callServerId}, {Activate: true}]}).then(function (csData)
+                {
+                    if (csData)
+                    {
                         logger.debug("DVP-MonitorRestAPI.CallDispatch id %d Found", reqId);
                         var ip = csData.InternalMainIP;
-                        if (ip) {
+                        if (ip)
+                        {
                             var dvpActionCat = 'LISTEN';
                             var data = format("&eavesdrop({0})", crn);
-                            if (bargeMethod.toLowerCase() == "barge") {
+                            if (bargeMethod.toLowerCase() == "barge")
+                            {
                                 dvpActionCat = 'BARGE';
                                 data = format("'queue_dtmf:w2@500,eavesdrop:{0}' inline", crn);
                             }
-                            else if (bargeMethod.toLowerCase() == "threeway") {
+                            else if (bargeMethod.toLowerCase() == "threeway")
+                            {
                                 dvpActionCat = 'THREEWAY';
                                 data = format("'queue_dtmf:w3@500,eavesdrop:{0}' inline", crn);
                             }
 
 
-                            var options = {
+                            var options =
+                            {
                                 method: 'GET',
                                 uri: "http://" + ip + ":8080/webapi/" + "create_uuid",
-                                headers: {
+                                headers:
+                                {
                                     'Content-Type': 'application/json',
                                     'Accept': 'application/json',
                                     'Authorization': 'Basic ' + new Buffer(config.FreeSwitch.userName + ':' + config.FreeSwitch.password).toString('base64')
                                 }
                             };
 
-                            request(options, function (error, response, body) { // Create Cart
-                                if (error) {
+                            request(options, function (error, response, body)
+                            { // Create Cart
+                                if (error)
+                                {
                                     var instance = messageFormatter.FormatMessage(error, "create_uuid", false, body);
                                     res.end(instance);
-                                } else {
+                                }
+                                else
+                                {
                                     //var options = format("{{return_ring_ready=false,origination_uuid={0},origination_caller_id_number={1},DVP_ACTION_CAT={2},DVP_OPERATION_CAT=PRIVATE_USER,companyid={3},tenantid={4},Other-Leg-Unique-ID={5}}", reqId, channelId, dvpActionCat, companyId, tenantId, channelId);
 
                                     var dialoption = format("return_ring_ready=false,origination_uuid={0},origination_caller_id_number={1},DVP_ACTION_CAT={2},DVP_OPERATION_CAT=PRIVATE_USER,companyid={3},tenantid={4},DVP_CALLMONITOR_OTHER_LEG={5}", reqId, channelId, dvpActionCat, companyId, tenantId, channelId);
 
                                     logger.debug('[DVP-MonitorRestAPI.CallDispatch] - [%s] - options : %s', reqId, dialoption);
 
-                                    if (protocol.toLowerCase() == "user") {
+                                    if (protocol.toLowerCase() == "user")
+                                    {
 
                                         dbmodel.Extension.find({
                                             where: [{Extension: destination}, {TenantId: tenantId}, {CompanyId: companyId}],
@@ -157,8 +257,10 @@ var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
                                                 }
                                             ]
 
-                                        }).then(function (user) {
-                                            if (user) {
+                                        }).then(function (user)
+                                        {
+                                            if (user)
+                                            {
                                                 var tempURL = user.SipUACEndpoint.SipUsername + "@" + user.SipUACEndpoint.CloudEndUser.Domain;
 
                                                 destination = tempURL ? format("user/{0}", tempURL) : format("user/{0}", destination);
@@ -326,3 +428,5 @@ function SendGetCommandToCallServer(callServerIp, command, callBack) {
 }
 
 // ---------------------- FreeSwitch Service Handler ---------------------- \\
+
+module.exports.callDisconnect = callDisconnect;

@@ -4,6 +4,7 @@
   "description": "REST API for monitor system features",
   "main": "app.js",
   "dependencies": {
+    "bluebird": "^3.4.7",
     "config": "^1.13.0",
     "dvp-common": "^0.3.4",
     "dvp-dbmodels": "^0.3.4",

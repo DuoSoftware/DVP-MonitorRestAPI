@@ -1,5 +1,6 @@
 var restify = require('restify');
 var stringify = require('stringify');
+var moment = require('moment');
 var config = require('config');
 var dbHandler = require('./DBBackendHandler.js');
 var dispatchHandler = require('./DispatchHandler');
@@ -1369,6 +1370,14 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls', authorization({resource:"sy
                                 if(callListKey)
                                 {
                                     //GETTING MAIN LIST ID FROM THE PREVIOUS LEG WHICH HAS TAGGED THIS LEG AS ITS OTHER LEG - TO PUSH THIS LEG AT THE CORRECT INDEX
+                                    if (hashList[key]['CHANNEL-BRIDGE-TIME']) {
+                                        var a = moment();
+                                        var b = moment(hashList[key]['CHANNEL-BRIDGE-TIME']);
+                                        var duration = moment.duration(a.diff(b));
+
+                                        hashList[key]['BRIDGE-DURATION'] = duration.hours() + 'h ' + duration.minutes() + 'm ' + duration.seconds() + 's';
+                                    }
+
                                     calls[callListKey].push(hashList[key]);
                                     usedChanList[key] = callListKey;
                                 }
@@ -1376,6 +1385,15 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls', authorization({resource:"sy
                             else
                             {
                                 //TOTALLY NEW LEG WITH NO OTHER LEG - ADDED AS THE FIRST ITEM IN MAIN LIST
+
+                                if (hashList[key]['CHANNEL-BRIDGE-TIME']) {
+                                    var a = moment();
+                                    var b = moment(hashList[key]['CHANNEL-BRIDGE-TIME']);
+                                    var duration = moment.duration(a.diff(b));
+
+                                    hashList[key]['BRIDGE-DURATION'] = duration.hours() + 'h ' + duration.minutes() + 'm ' + duration.seconds() + 's';
+                                }
+
                                 callChannels.push(hashList[key]);
 
                                 calls[key] = callChannels;
@@ -1394,6 +1412,14 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls', authorization({resource:"sy
                             {
                                 //OTHER LEG OF THIS LEG HAS ALREADY BEEN PROCESSED THEREFORE NEED TO ADD THIS TO THE CORRECT POSITION IN MAIN LIST
                                 var chanListId = usedChanList[otherLegUuid];
+
+                                if (hashList[key]['CHANNEL-BRIDGE-TIME']) {
+                                    var a = moment();
+                                    var b = moment(hashList[key]['CHANNEL-BRIDGE-TIME']);
+                                    var duration = moment.duration(a.diff(b));
+
+                                    hashList[key]['BRIDGE-DURATION'] = duration.hours() + 'h ' + duration.minutes() + 'm ' + duration.seconds() + 's';
+                                }
 
                                 calls[chanListId].push(hashList[key]);
 
@@ -1428,6 +1454,15 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls', authorization({resource:"sy
                                     var chanListId = otherLegChanList[otherLegUuid][0];
 
                                     var mainListKey = usedChanList[chanListId];
+
+                                    if (hashList[key]['CHANNEL-BRIDGE-TIME']) {
+                                        var a = moment();
+                                        var b = moment(hashList[key]['CHANNEL-BRIDGE-TIME']);
+                                        var duration = moment.duration(a.diff(b));
+
+                                        hashList[key]['BRIDGE-DURATION'] = duration.hours() + 'h ' + duration.minutes() + 'm ' + duration.seconds() + 's';
+                                    }
+
                                     calls[mainListKey].push(hashList[key]);
 
                                     otherLegChanList[otherLegUuid].push(key);
@@ -1435,6 +1470,14 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls', authorization({resource:"sy
                                 else
                                 {
                                     //TOTALLY NEW LEG WITH NO OTHER LEG - ADDED AS THE FIRST ITEM IN MAIN LIST
+                                    if (hashList[key]['CHANNEL-BRIDGE-TIME']) {
+                                        var a = moment();
+                                        var b = moment(hashList[key]['CHANNEL-BRIDGE-TIME']);
+                                        var duration = moment.duration(a.diff(b));
+
+                                        hashList[key]['BRIDGE-DURATION'] = duration.hours() + 'h ' + duration.minutes() + 'm ' + duration.seconds() + 's';
+                                    }
+
                                     callChannels.push(hashList[key]);
                                     usedChanList[key] = key;
                                     calls[key] = callChannels;

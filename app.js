@@ -1,5 +1,6 @@
 var restify = require('restify');
 var stringify = require('stringify');
+var moment = require('moment');
 var config = require('config');
 var dbHandler = require('./DBBackendHandler.js');
 var dispatchHandler = require('./DispatchHandler');
@@ -43,7 +44,17 @@ server.use(restify.fullResponse());
 server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
-server.use(jwt({secret: secret.Secret}));
+//server.use(restify.urlEncodedBodyParser());
+
+server.use(jwt({secret: secret.Secret,
+    getToken: function fromHeaderOrQuerystring (req) {
+        if (req.headers.authorization && req.headers.authorization.split(' ')[0].toLowerCase() === 'bearer') {
+            return req.headers.authorization.split(' ')[1];
+        } else if (req.params && req.params.Authorization) {
+            return req.params.Authorization;
+        }
+        return null;
+    }}));
 
 
 
@@ -1369,6 +1380,14 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls', authorization({resource:"sy
                                 if(callListKey)
                                 {
                                     //GETTING MAIN LIST ID FROM THE PREVIOUS LEG WHICH HAS TAGGED THIS LEG AS ITS OTHER LEG - TO PUSH THIS LEG AT THE CORRECT INDEX
+                                    if (hashList[key]['CHANNEL-BRIDGE-TIME']) {
+                                        var a = moment();
+                                        var b = moment(hashList[key]['CHANNEL-BRIDGE-TIME']);
+                                        var duration = moment.duration(a.diff(b));
+
+                                        hashList[key]['BRIDGE-DURATION'] = duration.hours() + 'h ' + duration.minutes() + 'm ' + duration.seconds() + 's';
+                                    }
+
                                     calls[callListKey].push(hashList[key]);
                                     usedChanList[key] = callListKey;
                                 }
@@ -1376,6 +1395,15 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls', authorization({resource:"sy
                             else
                             {
                                 //TOTALLY NEW LEG WITH NO OTHER LEG - ADDED AS THE FIRST ITEM IN MAIN LIST
+
+                                if (hashList[key]['CHANNEL-BRIDGE-TIME']) {
+                                    var a = moment();
+                                    var b = moment(hashList[key]['CHANNEL-BRIDGE-TIME']);
+                                    var duration = moment.duration(a.diff(b));
+
+                                    hashList[key]['BRIDGE-DURATION'] = duration.hours() + 'h ' + duration.minutes() + 'm ' + duration.seconds() + 's';
+                                }
+
                                 callChannels.push(hashList[key]);
 
                                 calls[key] = callChannels;
@@ -1394,6 +1422,14 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls', authorization({resource:"sy
                             {
                                 //OTHER LEG OF THIS LEG HAS ALREADY BEEN PROCESSED THEREFORE NEED TO ADD THIS TO THE CORRECT POSITION IN MAIN LIST
                                 var chanListId = usedChanList[otherLegUuid];
+
+                                if (hashList[key]['CHANNEL-BRIDGE-TIME']) {
+                                    var a = moment();
+                                    var b = moment(hashList[key]['CHANNEL-BRIDGE-TIME']);
+                                    var duration = moment.duration(a.diff(b));
+
+                                    hashList[key]['BRIDGE-DURATION'] = duration.hours() + 'h ' + duration.minutes() + 'm ' + duration.seconds() + 's';
+                                }
 
                                 calls[chanListId].push(hashList[key]);
 
@@ -1428,6 +1464,15 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls', authorization({resource:"sy
                                     var chanListId = otherLegChanList[otherLegUuid][0];
 
                                     var mainListKey = usedChanList[chanListId];
+
+                                    if (hashList[key]['CHANNEL-BRIDGE-TIME']) {
+                                        var a = moment();
+                                        var b = moment(hashList[key]['CHANNEL-BRIDGE-TIME']);
+                                        var duration = moment.duration(a.diff(b));
+
+                                        hashList[key]['BRIDGE-DURATION'] = duration.hours() + 'h ' + duration.minutes() + 'm ' + duration.seconds() + 's';
+                                    }
+
                                     calls[mainListKey].push(hashList[key]);
 
                                     otherLegChanList[otherLegUuid].push(key);
@@ -1435,6 +1480,14 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls', authorization({resource:"sy
                                 else
                                 {
                                     //TOTALLY NEW LEG WITH NO OTHER LEG - ADDED AS THE FIRST ITEM IN MAIN LIST
+                                    if (hashList[key]['CHANNEL-BRIDGE-TIME']) {
+                                        var a = moment();
+                                        var b = moment(hashList[key]['CHANNEL-BRIDGE-TIME']);
+                                        var duration = moment.duration(a.diff(b));
+
+                                        hashList[key]['BRIDGE-DURATION'] = duration.hours() + 'h ' + duration.minutes() + 'm ' + duration.seconds() + 's';
+                                    }
+
                                     callChannels.push(hashList[key]);
                                     usedChanList[key] = key;
                                     calls[key] = callChannels;
@@ -2138,6 +2191,267 @@ server.post('/DVP/API/:version/MonitorRestAPI/Dispatch/:channelId/disconnect', a
 
 });
 
+
+server.post('/DVP/API/:version/MonitorRestAPI/Direct/hungup', authorization({resource:"Dispatch", action:"write"}), function(req, res, next)
+{
+    try {
+
+        logger.info('[DVP-CallDisconnect] - [HTTP]  - Request received');
+
+        if (!req.user ||!req.user.tenant || !req.user.company)
+            throw new Error("invalid tenant or company.");
+
+        var tenantId = req.user.tenant;
+        var companyId = req.user.company;
+
+        var reqId = nodeUuid.v1();
+        var channelId = req.params.callrefid;
+
+        dispatchHandler.callDisconnect(reqId, channelId, companyId, tenantId)
+            .then(function(resp)
+            {
+                if(resp)
+                {
+                    var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, resp);
+                    logger.debug('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                    res.end(jsonString);
+                }
+                else
+                {
+                    var jsonString = messageFormatter.FormatMessage(new Error('Call Disconnect Error'), "ERROR", false, resp);
+                    logger.debug('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                    res.end(jsonString);
+                }
+            })
+            .catch(function(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "EXCEPTION", false, false);
+                logger.error('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                res.end(jsonString);
+            });
+
+    }
+    catch (ex) {
+
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, false);
+        logger.error('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+server.post('/DVP/API/:version/MonitorRestAPI/Direct/hold/:hold', authorization({resource:"Dispatch", action:"write"}), function(req, res, next)
+{
+    try {
+
+        logger.info('[DVP-CallDisconnect] - [HTTP]  - Request received');
+
+        if (!req.user ||!req.user.tenant || !req.user.company)
+            throw new Error("invalid tenant or company.");
+
+        var tenantId = req.user.tenant;
+        var companyId = req.user.company;
+
+        var reqId = nodeUuid.v1();
+        var channelId = req.params.callrefid;
+
+        req.params.hold = (req.params.hold == 'true');
+
+        dispatchHandler.callHold(reqId, channelId, companyId, tenantId,req.params.hold)
+            .then(function(resp)
+            {
+                if(resp)
+                {
+                    var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, resp);
+                    logger.debug('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                    res.end(jsonString);
+                }
+                else
+                {
+                    var jsonString = messageFormatter.FormatMessage(new Error('Call Disconnect Error'), "ERROR", false, resp);
+                    logger.debug('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                    res.end(jsonString);
+                }
+            })
+            .catch(function(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "EXCEPTION", false, false);
+                logger.error('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                res.end(jsonString);
+            });
+
+    }
+    catch (ex) {
+
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, false);
+        logger.error('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+server.post('/DVP/API/:version/MonitorRestAPI/Direct/mute/:mute', authorization({resource:"Dispatch", action:"write"}), function(req, res, next)
+{
+    try {
+
+        logger.info('[DVP-CallDisconnect] - [HTTP]  - Request received');
+
+        if (!req.user ||!req.user.tenant || !req.user.company)
+            throw new Error("invalid tenant or company.");
+
+        var tenantId = req.user.tenant;
+        var companyId = req.user.company;
+
+        var reqId = nodeUuid.v1();
+        var channelId = req.params.callrefid;
+
+
+        req.params.mute = (req.params.mute == 'true');
+
+        dispatchHandler.callMute(reqId, channelId, companyId, tenantId,req.params.mute)
+            .then(function(resp)
+            {
+                if(resp)
+                {
+                    var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, resp);
+                    logger.debug('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                    res.end(jsonString);
+                }
+                else
+                {
+                    var jsonString = messageFormatter.FormatMessage(new Error('Call Disconnect Error'), "ERROR", false, resp);
+                    logger.debug('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                    res.end(jsonString);
+                }
+            })
+            .catch(function(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "EXCEPTION", false, false);
+                logger.error('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                res.end(jsonString);
+            });
+
+    }
+    catch (ex) {
+
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, false);
+        logger.error('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+server.post('/DVP/API/:version/MonitorRestAPI/Direct/dtmf', authorization({resource:"Dispatch", action:"write"}), function(req, res, next)
+{
+    try {
+
+        logger.info('[DVP-CallDisconnect] - [HTTP]  - Request received');
+
+        if (!req.user ||!req.user.tenant || !req.user.company)
+            throw new Error("invalid tenant or company.");
+
+        var tenantId = req.user.tenant;
+        var companyId = req.user.company;
+
+        var reqId = nodeUuid.v1();
+        var channelId = req.params.callrefid;
+
+        dispatchHandler.sendDtmf(reqId, channelId, companyId, tenantId,req.params.digit)
+            .then(function(resp)
+            {
+                if(resp)
+                {
+                    var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, resp);
+                    logger.debug('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                    res.end(jsonString);
+                }
+                else
+                {
+                    var jsonString = messageFormatter.FormatMessage(new Error('Call Disconnect Error'), "ERROR", false, resp);
+                    logger.debug('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                    res.end(jsonString);
+                }
+            })
+            .catch(function(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "EXCEPTION", false, false);
+                logger.error('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                res.end(jsonString);
+            });
+
+    }
+    catch (ex) {
+
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, false);
+        logger.error('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+server.post('/DVP/API/:version/MonitorRestAPI/Direct/answer', authorization({resource:"Dispatch", action:"write"}), function(req, res, next)
+{
+    try {
+
+        logger.info('[DVP-CallDisconnect] - [HTTP]  - Request received');
+
+        if (!req.user ||!req.user.tenant || !req.user.company)
+            throw new Error("invalid tenant or company.");
+
+        var tenantId = req.user.tenant;
+        var companyId = req.user.company;
+
+        var reqId = nodeUuid.v1();
+        var channelId = req.params.channelId;
+
+        dispatchHandler.sendMessage(reqId, channelId, companyId, tenantId,"force_answer")
+            .then(function(resp)
+            {
+                if(resp)
+                {
+                    var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, resp);
+                    logger.debug('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                    res.end(jsonString);
+                }
+                else
+                {
+                    var jsonString = messageFormatter.FormatMessage(new Error('Call Disconnect Error'), "ERROR", false, resp);
+                    logger.debug('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                    res.end(jsonString);
+                }
+            })
+            .catch(function(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "EXCEPTION", false, false);
+                logger.error('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                res.end(jsonString);
+            });
+
+    }
+    catch (ex) {
+
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, false);
+        logger.error('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+
+
+
+
+//dvp-mongomodels
 // ---------------------- Dispatch call operations ---------------------- \\
 
 

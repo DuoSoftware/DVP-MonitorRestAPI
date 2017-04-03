@@ -8,6 +8,7 @@
     "config": "^1.13.0",
     "dvp-common": "^0.3.4",
     "dvp-dbmodels": "^0.3.4",
+    "moment": "^2.17.1",
     "node-uuid": "^1.4.3",
     "redis": "^2.6.0-2",
     "request": "^2.69.0",

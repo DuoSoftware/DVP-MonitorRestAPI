@@ -567,6 +567,16 @@ var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
                                 dvpActionCat = 'THREEWAY';
                                 data = format("'queue_dtmf:w3@500,eavesdrop:{0}' inline", crn);
                             }
+                            else if (bargeMethod.toLowerCase() == "returnlisten")
+                            {
+                                dvpActionCat = 'RETUENLISTEN';
+                                data = format("'queue_dtmf:w0@500,eavesdrop:{0}' inline", crn);
+                            }
+                            else if (bargeMethod.toLowerCase() == "swap")
+                            {
+                                dvpActionCat = 'SWAP';
+                                data = format("'queue_dtmf:w1@500,eavesdrop:{0}' inline", crn);
+                            }
 
 
                             var options =
@@ -731,6 +741,20 @@ module.exports.CallThreeway = function (tenantId, companyId, req, res) {
 
     CallDispatch(tenantId, companyId, "threeway", req, res);
 };
+
+
+module.exports.CallReturnListen = function (tenantId, companyId, req, res) {
+
+    CallDispatch(tenantId, companyId, "returnlisten", req, res);
+};
+
+module.exports.CallSwap = function (tenantId, companyId, req, res) {
+
+    CallDispatch(tenantId, companyId, "swap", req, res);
+};
+
+
+
 
 module.exports.CallListen = function (tenantId, companyId, req, res) {
 

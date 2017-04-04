@@ -2089,6 +2089,60 @@ server.post('/DVP/API/:version/MonitorRestAPI/Dispatch/:channelId/listen', autho
 
 });
 
+
+server.post('/DVP/API/:version/MonitorRestAPI/Dispatch/:channelId/returnlisten', authorization({resource:"Dispatch", action:"write"}), function(req, res, next)
+{
+    try {
+
+        logger.info('[DVP-CallListen] - [HTTP]  - Request received -  Data - %s ', JSON.stringify(req.body));
+
+        if (!req.user ||!req.user.tenant || !req.user.company)
+            throw new Error("invalid tenant or company.");
+        var cmp = req.body;
+        var tenantId = req.user.tenant;
+        var companyId = req.user.company;
+
+        dispatchHandler.CallReturnListen(tenantId, companyId,req, res);
+
+    }
+    catch (ex) {
+
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        logger.error('[DVP-CallListen] - Request response : %s ', jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+
+server.post('/DVP/API/:version/MonitorRestAPI/Dispatch/:channelId/swap', authorization({resource:"Dispatch", action:"write"}), function(req, res, next)
+{
+    try {
+
+        logger.info('[DVP-CallListen] - [HTTP]  - Request received -  Data - %s ', JSON.stringify(req.body));
+
+        if (!req.user ||!req.user.tenant || !req.user.company)
+            throw new Error("invalid tenant or company.");
+        var cmp = req.body;
+        var tenantId = req.user.tenant;
+        var companyId = req.user.company;
+
+        dispatchHandler.CallSwap(tenantId, companyId,req, res);
+
+    }
+    catch (ex) {
+
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        logger.error('[DVP-CallListen] - Request response : %s ', jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
 server.post('/DVP/API/:version/MonitorRestAPI/Dispatch/:channelId/barge', authorization({resource:"Dispatch", action:"write"}), function(req, res, next)
 {
     try {

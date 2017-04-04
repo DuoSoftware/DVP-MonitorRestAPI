@@ -2090,25 +2090,49 @@ server.post('/DVP/API/:version/MonitorRestAPI/Dispatch/:channelId/listen', autho
 });
 
 
-server.post('/DVP/API/:version/MonitorRestAPI/Dispatch/:channelId/returnlisten', authorization({resource:"Dispatch", action:"write"}), function(req, res, next)
+server.post('/DVP/API/:version/MonitorRestAPI/Dispatch/:channelId/returnlisten/:legId', authorization({resource:"Dispatch", action:"write"}), function(req, res, next)
 {
     try {
 
-        logger.info('[DVP-CallListen] - [HTTP]  - Request received -  Data - %s ', JSON.stringify(req.body));
+        logger.info('[DVP-CallDisconnect] - [HTTP]  - Request received');
 
         if (!req.user ||!req.user.tenant || !req.user.company)
             throw new Error("invalid tenant or company.");
-        var cmp = req.body;
+
         var tenantId = req.user.tenant;
         var companyId = req.user.company;
+        var legId = req.params.legId;
+        var reqId = nodeUuid.v1();
+        var channelId = req.params.channelId;
 
-        dispatchHandler.CallReturnListen(tenantId, companyId,req, res);
+        dispatchHandler.simulateDtmf(reqId, channelId, companyId, tenantId,legId,'0')
+            .then(function(resp)
+            {
+                if(resp)
+                {
+                    var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, resp);
+                    logger.debug('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                    res.end(jsonString);
+                }
+                else
+                {
+                    var jsonString = messageFormatter.FormatMessage(new Error('Call Disconnect Error'), "ERROR", false, resp);
+                    logger.debug('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                    res.end(jsonString);
+                }
+            })
+            .catch(function(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "EXCEPTION", false, false);
+                logger.error('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                res.end(jsonString);
+            });
 
     }
     catch (ex) {
 
-        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
-        logger.error('[DVP-CallListen] - Request response : %s ', jsonString);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, false);
+        logger.error('[DVP-CallDisconnect] - Request response : %s ', jsonString);
         res.end(jsonString);
     }
 
@@ -2117,25 +2141,49 @@ server.post('/DVP/API/:version/MonitorRestAPI/Dispatch/:channelId/returnlisten',
 });
 
 
-server.post('/DVP/API/:version/MonitorRestAPI/Dispatch/:channelId/swap', authorization({resource:"Dispatch", action:"write"}), function(req, res, next)
+server.post('/DVP/API/:version/MonitorRestAPI/Dispatch/:channelId/swap/:legId', authorization({resource:"Dispatch", action:"write"}), function(req, res, next)
 {
     try {
 
-        logger.info('[DVP-CallListen] - [HTTP]  - Request received -  Data - %s ', JSON.stringify(req.body));
+        logger.info('[DVP-CallDisconnect] - [HTTP]  - Request received');
 
         if (!req.user ||!req.user.tenant || !req.user.company)
             throw new Error("invalid tenant or company.");
-        var cmp = req.body;
+
         var tenantId = req.user.tenant;
         var companyId = req.user.company;
+        var legId = req.params.legId;
+        var reqId = nodeUuid.v1();
+        var channelId = req.params.channelId;
 
-        dispatchHandler.CallSwap(tenantId, companyId,req, res);
+        dispatchHandler.simulateDtmf(reqId, channelId, companyId, tenantId,legId,'1')
+            .then(function(resp)
+            {
+                if(resp)
+                {
+                    var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, resp);
+                    logger.debug('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                    res.end(jsonString);
+                }
+                else
+                {
+                    var jsonString = messageFormatter.FormatMessage(new Error('Call Disconnect Error'), "ERROR", false, resp);
+                    logger.debug('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                    res.end(jsonString);
+                }
+            })
+            .catch(function(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "EXCEPTION", false, false);
+                logger.error('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                res.end(jsonString);
+            });
 
     }
     catch (ex) {
 
-        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
-        logger.error('[DVP-CallListen] - Request response : %s ', jsonString);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, false);
+        logger.error('[DVP-CallDisconnect] - Request response : %s ', jsonString);
         res.end(jsonString);
     }
 
@@ -2143,51 +2191,100 @@ server.post('/DVP/API/:version/MonitorRestAPI/Dispatch/:channelId/swap', authori
 
 });
 
-server.post('/DVP/API/:version/MonitorRestAPI/Dispatch/:channelId/barge', authorization({resource:"Dispatch", action:"write"}), function(req, res, next)
+server.post('/DVP/API/:version/MonitorRestAPI/Dispatch/:channelId/barge/:legId', authorization({resource:"Dispatch", action:"write"}), function(req, res, next)
 {
     try {
 
-        logger.info('[DVP-CallBargin] - [HTTP]  - Request received -  Data - %s ', JSON.stringify(req.body));
+        logger.info('[DVP-CallDisconnect] - [HTTP]  - Request received');
 
         if (!req.user ||!req.user.tenant || !req.user.company)
             throw new Error("invalid tenant or company.");
-        var cmp = req.body;
+
         var tenantId = req.user.tenant;
         var companyId = req.user.company;
 
-        dispatchHandler.CallBargin(tenantId, companyId,req, res);
+        var reqId = nodeUuid.v1();
+        var channelId = req.params.channelId;
+        var legId = req.params.legId;
+
+        dispatchHandler.simulateDtmf(reqId, channelId, companyId, tenantId,legId,'2')
+            .then(function(resp)
+            {
+                if(resp)
+                {
+                    var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, resp);
+                    logger.debug('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                    res.end(jsonString);
+                }
+                else
+                {
+                    var jsonString = messageFormatter.FormatMessage(new Error('Call Disconnect Error'), "ERROR", false, resp);
+                    logger.debug('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                    res.end(jsonString);
+                }
+            })
+            .catch(function(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "EXCEPTION", false, false);
+                logger.error('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                res.end(jsonString);
+            });
 
     }
     catch (ex) {
 
-        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
-        logger.error('[DVP-CallBargin] - Request response : %s ', jsonString);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, false);
+        logger.error('[DVP-CallDisconnect] - Request response : %s ', jsonString);
         res.end(jsonString);
     }
 
     return next();
-
 });
 
-server.post('/DVP/API/:version/MonitorRestAPI/Dispatch/:channelId/threeway', authorization({resource:"Dispatch", action:"write"}), function(req, res, next)
+server.post('/DVP/API/:version/MonitorRestAPI/Dispatch/:channelId/threeway/:legId', authorization({resource:"Dispatch", action:"write"}), function(req, res, next)
 {
     try {
 
-        logger.info('[DVP-CallThreeway] - [HTTP]  - Request received -  Data - %s ', JSON.stringify(req.body));
+        logger.info('[DVP-CallDisconnect] - [HTTP]  - Request received');
 
         if (!req.user ||!req.user.tenant || !req.user.company)
             throw new Error("invalid tenant or company.");
-        var cmp = req.body;
+
         var tenantId = req.user.tenant;
         var companyId = req.user.company;
+        var legId = req.params.legId;
 
-        dispatchHandler.CallThreeway(tenantId, companyId,req, res);
+        var reqId = nodeUuid.v1();
+        var channelId = req.params.channelId;
+
+        dispatchHandler.simulateDtmf(reqId, channelId, companyId, tenantId,legId,'3')
+            .then(function(resp)
+            {
+                if(resp)
+                {
+                    var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, resp);
+                    logger.debug('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                    res.end(jsonString);
+                }
+                else
+                {
+                    var jsonString = messageFormatter.FormatMessage(new Error('Call Disconnect Error'), "ERROR", false, resp);
+                    logger.debug('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                    res.end(jsonString);
+                }
+            })
+            .catch(function(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "EXCEPTION", false, false);
+                logger.error('[DVP-CallDisconnect] - Request response : %s ', jsonString);
+                res.end(jsonString);
+            });
 
     }
     catch (ex) {
 
-        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
-        logger.error('[DVP-CallThreeway] - Request response : %s ', jsonString);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, false);
+        logger.error('[DVP-CallDisconnect] - Request response : %s ', jsonString);
         res.end(jsonString);
     }
 

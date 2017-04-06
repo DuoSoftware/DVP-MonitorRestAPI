@@ -849,18 +849,15 @@ module.exports.CallThreeway = function (tenantId, companyId, req, res) {
     CallDispatch(tenantId, companyId, "threeway", req, res);
 };
 
-
 module.exports.CallReturnListen = function (tenantId, companyId, req, res) {
 
     CallDispatch(tenantId, companyId, "returnlisten", req, res);
 };
 
-
 module.exports.CallSwap = function (tenantId, companyId, req, res) {
 
     CallDispatch(tenantId, companyId, "swap", req, res);
 };
-
 
 module.exports.CallListen = function (tenantId, companyId, req, res) {
 

@@ -926,9 +926,10 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls/Count', authorization({resour
 
 });
 
-server.post('/DVP/API/:version/MonitorRestAPI/TenantCalls/Count', authorization({resource:"systemmonitoring", action:"read"}), function(req, res, next)
+server.post('/DVP/API/:version/MonitorRestAPI/TenantCalls/Count', authorization({resource:"tenantmonitoring", action:"read"}), function(req, res, next)
 {
     var reqId = nodeUuid.v1();
+    var emptyArr = [];
     try
     {
         logger.debug('[DVP-MonitorRestAPI.GetTenantCallsCount] - [%s] - HTTP Request Received', reqId);
@@ -956,13 +957,11 @@ server.post('/DVP/API/:version/MonitorRestAPI/TenantCalls/Count', authorization(
             {
                 var newArr = companyIds.map(function(comp, index)
                 {
-                    var obj = {
+                    return {
                         CompanyId: comp,
-                        InboundCount: result[index*2],
-                        OutboundCount: result[(index*2)+1]
+                        InboundCount: result[index * 2],
+                        OutboundCount: result[(index * 2) + 1]
                     };
-
-                    return obj;
                 });
 
                 var jsonString = messageFormatter.FormatMessage(null, "Operation Success", true, newArr);
@@ -976,8 +975,7 @@ server.post('/DVP/API/:version/MonitorRestAPI/TenantCalls/Count', authorization(
     }
     catch(ex)
     {
-        logger.error('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - Exception occurred', reqId, ex);
-        var jsonString = messageFormatter.FormatMessage(ex, "", false, "0");
+        var jsonString = messageFormatter.FormatMessage(ex, "Exception occurred", false, emptyArr);
         logger.debug('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
         res.end(jsonString);
     }

@@ -926,6 +926,66 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls/Count', authorization({resour
 
 });
 
+server.post('/DVP/API/:version/MonitorRestAPI/TenantCalls/Count', authorization({resource:"systemmonitoring", action:"read"}), function(req, res, next)
+{
+    var reqId = nodeUuid.v1();
+    try
+    {
+        logger.debug('[DVP-MonitorRestAPI.GetTenantCallsCount] - [%s] - HTTP Request Received', reqId);
+
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
+
+        var companyIds = req.body;
+
+        var keys = [];
+
+        if(Array.isArray(companyIds))
+        {
+            companyIds.forEach(function(compId)
+            {
+                keys.push('DVP_CALL_COUNT_COMPANY_DIR:' + tenantId + ':' + compId + ':inbound', 'DVP_CALL_COUNT_COMPANY_DIR:' + tenantId + ':' + compId + ':outbound');
+            });
+
+            redisHandler.MGetObjects(reqId, keys, function(err, result)
+            {
+                var newArr = companyIds.map(function(comp, index)
+                {
+                    var obj = {
+                        CompanyId: comp,
+                        InboundCount: result[index*2],
+                        OutboundCount: result[(index*2)+1]
+                    };
+
+                    return obj;
+                });
+
+                var jsonString = messageFormatter.FormatMessage(null, "Operation Success", true, newArr);
+
+                logger.debug('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            })
+        }
+
+
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - Exception occurred', reqId, ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "", false, "0");
+        logger.debug('[DVP-MonitorRestAPI.GetCallsCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
 server.get('/DVP/API/:version/MonitorRestAPI/Channels/Count', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
 {
     var reqId = nodeUuid.v1();

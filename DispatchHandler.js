@@ -103,7 +103,7 @@ var callDisconnect = function(reqId, channelId, companyId, tenantId)
             {
                 if(hashObj)
                 {
-                    if(hashObj["DVP-CompanyId"] && hashObj["DVP-TenantId"] && hashObj["DVP-CompanyId"] === companyId && hashObj["DVP-TenantId"] === tenantId)
+                    if(hashObj["DVP-CompanyId"] && hashObj["DVP-TenantId"] && hashObj["DVP-CompanyId"] === companyId.toString() && hashObj["DVP-TenantId"] === tenantId.toString())
                     {
                         var callServerId = hashObj["FreeSWITCH-Switchname"];
                         dbmodel.CallServer.find({where: [{id: callServerId}, {Activate: true}]})
@@ -172,6 +172,359 @@ var callDisconnect = function(reqId, channelId, companyId, tenantId)
     })
 
 };
+
+var callHold = function(reqId, channelId, companyId, tenantId, hold)
+{
+    return new Promise(function(fulfill, reject)
+    {
+        redisHandler.GetFromHash(reqId, channelId, function (err, hashObj)
+        {
+            if (err)
+            {
+                reject(err);
+            }
+            else
+            {
+                if(hashObj)
+                {
+                    if(hashObj["DVP-CompanyId"] && hashObj["DVP-TenantId"] && hashObj["DVP-CompanyId"] === companyId.toString() && hashObj["DVP-TenantId"] === tenantId.toString())
+                    {
+                        var callServerId = hashObj["FreeSWITCH-Switchname"];
+                        dbmodel.CallServer.find({where: [{id: callServerId}, {Activate: true}]})
+                            .then(function (csData)
+                            {
+                                if(csData)
+                                {
+                                    var ip = csData.InternalMainIP;
+                                    if (ip)
+                                    {
+                                        var holdUrl = "http://" + ip + ":8080/webapi/uuid_hold?" + channelId;
+                                        if(!hold){
+                                            var holdUrl = "http://" + ip + ":8080/webapi/uuid_hold?off " + channelId;
+                                        }
+
+                                        var options = {
+                                            method: 'GET',
+                                            uri: holdUrl,
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'Accept': 'application/json',
+                                                'Authorization': 'Basic ' + new Buffer(config.FreeSwitch.userName + ':' + config.FreeSwitch.password).toString('base64')
+                                            }
+                                        };
+
+                                        request(options, function (error, response, body)
+                                        {
+                                            if (error)
+                                            {
+                                                reject(error);
+                                            }
+                                            else
+                                            {
+                                                fulfill(true);
+                                            }
+                                        });
+
+                                    }
+                                    else
+                                    {
+                                        reject(new Error('Call server ip not set'));
+
+                                    }
+
+                                }
+                                else
+                                {
+                                    reject(new Error('Cannot find a call server for call'));
+                                }
+
+                            })
+                            .catch(function(err)
+                            {
+                                reject(err);
+                            });
+
+                    }
+                    else
+                    {
+                        reject(new Error('Company validation failed'));
+                    }
+
+                }
+                else
+                {
+                    reject(new Error('Call not found for channel id'));
+                }
+            }
+        });
+
+    })
+
+};
+
+var callMute = function(reqId, channelId, companyId, tenantId, mute)
+{
+    return new Promise(function(fulfill, reject)
+    {
+        redisHandler.GetFromHash(reqId, channelId, function (err, hashObj)
+        {
+            if (err)
+            {
+                reject(err);
+            }
+            else
+            {
+                if(hashObj)
+                {
+                    if(hashObj["DVP-CompanyId"] && hashObj["DVP-TenantId"] && hashObj["DVP-CompanyId"] === companyId.toString() && hashObj["DVP-TenantId"] === tenantId.toString())
+                    {
+                        var callServerId = hashObj["FreeSWITCH-Switchname"];
+                        dbmodel.CallServer.find({where: [{id: callServerId}, {Activate: true}]})
+                            .then(function (csData)
+                            {
+                                if(csData)
+                                {
+                                    var ip = csData.InternalMainIP;
+                                    if (ip)
+                                    {
+                                        var muteUrl = "http://" + ip + ":8080/webapi/uuid_audio?" + channelId+" mute";
+                                        if(!mute){
+                                            var muteUrl = "http://" + ip + ":8080/webapi/uuid_audio?" + channelId+" level 0";
+                                        }
+
+                                        var options = {
+                                            method: 'GET',
+                                            uri: muteUrl,
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'Accept': 'application/json',
+                                                'Authorization': 'Basic ' + new Buffer(config.FreeSwitch.userName + ':' + config.FreeSwitch.password).toString('base64')
+                                            }
+                                        };
+
+                                        request(options, function (error, response, body)
+                                        {
+                                            if (error)
+                                            {
+                                                reject(error);
+                                            }
+                                            else
+                                            {
+                                                fulfill(true);
+                                            }
+                                        });
+
+                                    }
+                                    else
+                                    {
+                                        reject(new Error('Call server ip not set'));
+
+                                    }
+
+                                }
+                                else
+                                {
+                                    reject(new Error('Cannot find a call server for call'));
+                                }
+
+                            })
+                            .catch(function(err)
+                            {
+                                reject(err);
+                            });
+
+                    }
+                    else
+                    {
+                        reject(new Error('Company validation failed'));
+                    }
+
+                }
+                else
+                {
+                    reject(new Error('Call not found for channel id'));
+                }
+            }
+        });
+
+    })
+
+};
+
+var sendDtmf = function(reqId, channelId, companyId, tenantId, dtmf)
+{
+    return new Promise(function(fulfill, reject)
+    {
+        redisHandler.GetFromHash(reqId, channelId, function (err, hashObj)
+        {
+            if (err)
+            {
+                reject(err);
+            }
+            else
+            {
+                if(hashObj)
+                {
+                    if(hashObj["DVP-CompanyId"] && hashObj["DVP-TenantId"] && hashObj["DVP-CompanyId"] === companyId.toString() && hashObj["DVP-TenantId"] === tenantId.toString())
+                    {
+                        var callServerId = hashObj["FreeSWITCH-Switchname"];
+                        dbmodel.CallServer.find({where: [{id: callServerId}, {Activate: true}]})
+                            .then(function (csData)
+                            {
+                                if(csData)
+                                {
+                                    var ip = csData.InternalMainIP;
+                                    if (ip)
+                                    {
+                                        var dtmfUrl = "http://" + ip + ":8080/webapi/uuid_send_dtmf?" + channelId+" "+dtmf;
+
+
+                                        var options = {
+                                            method: 'GET',
+                                            uri: dtmfUrl,
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'Accept': 'application/json',
+                                                'Authorization': 'Basic ' + new Buffer(config.FreeSwitch.userName + ':' + config.FreeSwitch.password).toString('base64')
+                                            }
+                                        };
+
+                                        request(options, function (error, response, body)
+                                        {
+                                            if (error)
+                                            {
+                                                reject(error);
+                                            }
+                                            else
+                                            {
+                                                fulfill(true);
+                                            }
+                                        });
+
+                                    }
+                                    else
+                                    {
+                                        reject(new Error('Call server ip not set'));
+
+                                    }
+
+                                }
+                                else
+                                {
+                                    reject(new Error('Cannot find a call server for call'));
+                                }
+
+                            })
+                            .catch(function(err)
+                            {
+                                reject(err);
+                            });
+
+                    }
+                    else
+                    {
+                        reject(new Error('Company validation failed'));
+                    }
+
+                }
+                else
+                {
+                    reject(new Error('Call not found for channel id'));
+                }
+            }
+        });
+
+    })
+
+};
+
+var sendMessage = function(reqId, channelId, companyId, tenantId, message)
+{
+    return new Promise(function(fulfill, reject)
+    {
+        redisHandler.GetFromHash(reqId, channelId, function (err, hashObj)
+        {
+            if (err)
+            {
+                reject(err);
+            }
+            else
+            {
+                if(hashObj)
+                {
+                    if(hashObj["DVP-CompanyId"] && hashObj["DVP-TenantId"] && hashObj["DVP-CompanyId"] === companyId.toString() && hashObj["DVP-TenantId"] === tenantId.toString())
+                    {
+                        var callServerId = hashObj["FreeSWITCH-Switchname"];
+                        dbmodel.CallServer.find({where: [{id: callServerId}, {Activate: true}]})
+                            .then(function (csData)
+                            {
+                                if(csData)
+                                {
+                                    var ip = csData.InternalMainIP;
+                                    if (ip)
+                                    {
+                                        var messageUrl = "http://" + ip + ":8080/webapi/uuid_chat?" + channelId+" "+message;
+
+
+                                        var options = {
+                                            method: 'GET',
+                                            uri: messageUrl,
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'Accept': 'application/json',
+                                                'Authorization': 'Basic ' + new Buffer(config.FreeSwitch.userName + ':' + config.FreeSwitch.password).toString('base64')
+                                            }
+                                        };
+
+                                        request(options, function (error, response, body)
+                                        {
+                                            if (error)
+                                            {
+                                                reject(error);
+                                            }
+                                            else
+                                            {
+                                                fulfill(true);
+                                            }
+                                        });
+
+                                    }
+                                    else
+                                    {
+                                        reject(new Error('Call server ip not set'));
+
+                                    }
+
+                                }
+                                else
+                                {
+                                    reject(new Error('Cannot find a call server for call'));
+                                }
+
+                            })
+                            .catch(function(err)
+                            {
+                                reject(err);
+                            });
+
+                    }
+                    else
+                    {
+                        reject(new Error('Company validation failed'));
+                    }
+
+                }
+                else
+                {
+                    reject(new Error('Call not found for channel id'));
+                }
+            }
+        });
+
+    })
+
+};
+
 
 var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
 
@@ -430,3 +783,7 @@ function SendGetCommandToCallServer(callServerIp, command, callBack) {
 // ---------------------- FreeSwitch Service Handler ---------------------- \\
 
 module.exports.callDisconnect = callDisconnect;
+module.exports.callHold = callHold;
+module.exports.callMute = callMute;
+module.exports.sendDtmf =sendDtmf;
+module.exports.sendMessage = sendMessage;

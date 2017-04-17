@@ -26,7 +26,7 @@ module.exports = {
   },
   "Host":{
     "Ip":"0.0.0.0",
-    "Port":"8823",
+    "Port":"3637",
     "Version":"1.0.0.0"
   },
   "FreeSwitch":{

@@ -200,7 +200,7 @@ var callHold = function(reqId, channelId, companyId, tenantId, hold)
                                     {
                                         var holdUrl = "http://" + ip + ":8080/webapi/uuid_hold?" + channelId;
                                         if(!hold){
-                                            var holdUrl = "http://" + ip + ":8080/webapi/uuid_hold?off " + channelId;
+                                            holdUrl = "http://" + ip + ":8080/webapi/uuid_hold?off " + channelId;
                                         }
 
                                         var options = {
@@ -287,9 +287,9 @@ var callMute = function(reqId, channelId, companyId, tenantId, mute)
                                     var ip = csData.InternalMainIP;
                                     if (ip)
                                     {
-                                        var muteUrl = "http://" + ip + ":8080/webapi/uuid_audio?" + channelId+" mute";
+                                        var muteUrl = "http://" + ip + ":8080/webapi/uuid_audio?" + channelId+" start write mute -4";
                                         if(!mute){
-                                            var muteUrl = "http://" + ip + ":8080/webapi/uuid_audio?" + channelId+" level 0";
+                                            muteUrl = "http://" + ip + ":8080/webapi/uuid_audio?" + channelId+" start write mute 0";
                                         }
 
                                         var options = {

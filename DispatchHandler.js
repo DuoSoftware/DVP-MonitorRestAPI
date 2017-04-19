@@ -463,7 +463,7 @@ var transfer= function(reqId, channelId, companyId, tenantId,legId, number)
                                     var ip = csData.InternalMainIP;
                                     if (ip)
                                     {
-                                        var context = util.format("XML PABXFeatures|{0}|{1}",tenantId, companyId);
+                                        var context = util.format("XML PABXFeatures|%d|%d",tenantId, companyId);
                                         var transferUrl = "http://" + ip + ":8080/webapi/uuid_transfer?" + legId+" "+number+" "+context;
 
                                         //<dest-exten> [<dialplan>] [<context>]

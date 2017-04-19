@@ -438,6 +438,96 @@ var sendDtmf = function(reqId, channelId, companyId, tenantId, dtmf)
 
 };
 
+var transfer= function(reqId, channelId, companyId, tenantId,legId, number)
+{
+    return new Promise(function(fulfill, reject)
+    {
+        redisHandler.GetFromHash(reqId, channelId, function (err, hashObj)
+        {
+            if (err)
+            {
+                reject(err);
+            }
+            else
+            {
+                if(hashObj)
+                {
+                    if(hashObj["DVP-CompanyId"] && hashObj["DVP-TenantId"] && hashObj["DVP-CompanyId"] === companyId.toString() && hashObj["DVP-TenantId"] === tenantId.toString())
+                    {
+                        var callServerId = hashObj["FreeSWITCH-Switchname"];
+                        dbmodel.CallServer.find({where: [{id: callServerId}, {Activate: true}]})
+                            .then(function (csData)
+                            {
+                                if(csData)
+                                {
+                                    var ip = csData.InternalMainIP;
+                                    if (ip)
+                                    {
+                                        var context = util.format("XML PABXFeatures|{0}|{1}",tenantId, companyId);
+                                        var transferUrl = "http://" + ip + ":8080/webapi/uuid_transfer?" + legId+" "+number+" "+context;
+
+                                        //<dest-exten> [<dialplan>] [<context>]
+
+
+                                        var options = {
+                                            method: 'GET',
+                                            uri: transferUrl,
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'Accept': 'application/json',
+                                                'Authorization': 'Basic ' + new Buffer(config.FreeSwitch.userName + ':' + config.FreeSwitch.password).toString('base64')
+                                            }
+                                        };
+
+                                        request(options, function (error, response, body)
+                                        {
+                                            if (error)
+                                            {
+                                                reject(error);
+                                            }
+                                            else
+                                            {
+                                                fulfill(true);
+                                            }
+                                        });
+
+                                    }
+                                    else
+                                    {
+                                        reject(new Error('Call server ip not set'));
+
+                                    }
+
+                                }
+                                else
+                                {
+                                    reject(new Error('Cannot find a call server for call'));
+                                }
+
+                            })
+                            .catch(function(err)
+                            {
+                                reject(err);
+                            });
+
+                    }
+                    else
+                    {
+                        reject(new Error('Company validation failed'));
+                    }
+
+                }
+                else
+                {
+                    reject(new Error('Call not found for channel id'));
+                }
+            }
+        });
+
+    })
+
+};
+
 var simulateDtmf = function(reqId, channelId, companyId, tenantId, legId,dtmf)
 {
     return new Promise(function(fulfill, reject)
@@ -915,3 +1005,4 @@ module.exports.callMute = callMute;
 module.exports.sendDtmf =sendDtmf;
 module.exports.simulateDtmf = simulateDtmf;
 module.exports.sendMessage = sendMessage;
+module.exports.transfer = transfer;

@@ -2790,7 +2790,7 @@ server.post('/DVP/API/:version/MonitorRestAPI/BindResourceToVeeryAccount', autho
         var sipUri = req.body.SipURI;
         var resourceId = req.body.ResourceId;
 
-        logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - HTTP Request Received : resource : %s', reqId, resourceId);
+        logger.debug('[DVP-MonitorRestAPI.BindResourceToVeeryAccount] - [%s] - HTTP Request Received : resource : %s', reqId, resourceId);
 
         if(sipUri && iss && resourceId)
         {
@@ -2830,12 +2830,44 @@ server.post('/DVP/API/:version/MonitorRestAPI/BindResourceToVeeryAccount', autho
                                 res.end(jsonString);
 
                             }
-                        })
+                        });
+
+                        if(sipUser.Extension && sipUser.Extension.Extension)
+                        {
+                            var extKey = 'EXTENSION_RESOURCE_MAP:' + tenantId + ':' + companyId + ':' + sipUser.Extension.Extension;
+
+                            var obj = {
+                                SipURI: sipUri,
+                                Context: sipUser.ContextId,
+                                Issuer : iss,
+                                CompanyId : companyId,
+                                TenantId : tenantId,
+                                ResourceId: resourceId
+                            };
+
+                            redisHandler.SetObject(reqId, extKey, JSON.stringify(obj), function(err, result)
+                            {
+                                if(err)
+                                {
+                                    var jsonString = messageFormatter.FormatMessage(err, "Error occurred", false, false);
+                                    logger.error('[DVP-MonitorRestAPI.BindResourceToVeeryAccount] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                                    res.end(jsonString);
+
+                                }
+                                else
+                                {
+                                    var jsonString = messageFormatter.FormatMessage(null, "Success", true, true);
+                                    logger.debug('[DVP-MonitorRestAPI.BindResourceToVeeryAccount] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                                    res.end(jsonString);
+
+                                }
+                            })
+                        }
                     }
                     else
                     {
                         var jsonString = messageFormatter.FormatMessage(new Error('Sip user or context not found'), "Sip user or context not found", false, false);
-                        logger.error('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                        logger.error('[DVP-MonitorRestAPI.BindResourceToVeeryAccount] - [%s] - API RESPONSE : %s', reqId, jsonString);
                         res.end(jsonString);
                     }
                 })
@@ -2844,21 +2876,21 @@ server.post('/DVP/API/:version/MonitorRestAPI/BindResourceToVeeryAccount', autho
             else
             {
                 var jsonString = messageFormatter.FormatMessage(new Error('Invalid Sip URI Format'), "Invalid Sip URI Format", false, false);
-                logger.error('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                logger.error('[DVP-MonitorRestAPI.BindResourceToVeeryAccount] - [%s] - API RESPONSE : %s', reqId, jsonString);
                 res.end(jsonString);
             }
         }
         else
         {
             var jsonString = messageFormatter.FormatMessage(new Error('Sip URI not provided'), "Sip URI not provided", false, false);
-            logger.error('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+            logger.error('[DVP-MonitorRestAPI.BindResourceToVeeryAccount] - [%s] - API RESPONSE : %s', reqId, jsonString);
             res.end(jsonString);
         }
     }
     catch(ex)
     {
         var jsonString = messageFormatter.FormatMessage(ex, "Error occurred", false, false);
-        logger.error('[DVP-MonitorRestAPI.GetChannelsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        logger.error('[DVP-MonitorRestAPI.BindResourceToVeeryAccount] - [%s] - API RESPONSE : %s', reqId, jsonString);
         res.end(jsonString);
     }
 

@@ -54,7 +54,7 @@ var GetSipUser = function(reqId, username, domain, companyId, tenantId, callback
     try
     {
 
-        dbModel.SipUACEndpoint.find({where: [{SipUsername: username, CompanyId: companyId, TenantId: tenantId}], include: [{model: dbModel.CloudEndUser, as: 'CloudEndUser', where:[{Domain: domain}]}]})
+        dbModel.SipUACEndpoint.find({where: [{SipUsername: username, CompanyId: companyId, TenantId: tenantId}], include: [{model: dbModel.CloudEndUser, as: 'CloudEndUser', where:[{Domain: domain}]}, {model: dbModel.Extension, as: 'Extension'}]})
             .then(function (usr)
             {
                 return callback(null, usr);

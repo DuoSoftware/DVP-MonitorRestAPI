@@ -9,7 +9,8 @@
 #EXPOSE 8823
 
 FROM node:5.10.0
-RUN git clone git://github.com/DuoSoftware/DVP-MonitorRestAPI.git /usr/local/src/monitorrestapi
+ARG VERSION_TAG
+RUN git clone -b $VERSION_TAG https://github.com/DuoSoftware/DVP-MonitorRestAPI.git /usr/local/src/monitorrestapi
 RUN cd /usr/local/src/monitorrestapi;
 WORKDIR /usr/local/src/monitorrestapi
 RUN npm install

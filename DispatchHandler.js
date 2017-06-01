@@ -438,6 +438,183 @@ var sendDtmf = function(reqId, channelId, companyId, tenantId, dtmf)
 
 };
 
+var transfer= function(reqId, channelId, companyId, tenantId,legId, number)
+{
+    return new Promise(function(fulfill, reject)
+    {
+        redisHandler.GetFromHash(reqId, channelId, function (err, hashObj)
+        {
+            if (err)
+            {
+                reject(err);
+            }
+            else
+            {
+                if(hashObj)
+                {
+                    if(hashObj["DVP-CompanyId"] && hashObj["DVP-TenantId"] && hashObj["DVP-CompanyId"] === companyId.toString() && hashObj["DVP-TenantId"] === tenantId.toString())
+                    {
+                        var callServerId = hashObj["FreeSWITCH-Switchname"];
+                        dbmodel.CallServer.find({where: [{id: callServerId}, {Activate: true}]})
+                            .then(function (csData)
+                            {
+                                if(csData)
+                                {
+                                    var ip = csData.InternalMainIP;
+                                    if (ip)
+                                    {
+                                        var context = util.format("XML PBXFeatures|%d|%d",tenantId, companyId);
+                                        var transferUrl = "http://" + ip + ":8080/webapi/uuid_transfer?" + channelId+" "+number+" "+context;
+
+                                        //<dest-exten> [<dialplan>] [<context>]
+
+
+                                        var options = {
+                                            method: 'GET',
+                                            uri: transferUrl,
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'Accept': 'application/json',
+                                                'Authorization': 'Basic ' + new Buffer(config.FreeSwitch.userName + ':' + config.FreeSwitch.password).toString('base64')
+                                            }
+                                        };
+
+                                        request(options, function (error, response, body)
+                                        {
+                                            if (error)
+                                            {
+                                                reject(error);
+                                            }
+                                            else
+                                            {
+                                                fulfill(true);
+                                            }
+                                        });
+
+                                    }
+                                    else
+                                    {
+                                        reject(new Error('Call server ip not set'));
+
+                                    }
+
+                                }
+                                else
+                                {
+                                    reject(new Error('Cannot find a call server for call'));
+                                }
+
+                            })
+                            .catch(function(err)
+                            {
+                                reject(err);
+                            });
+
+                    }
+                    else
+                    {
+                        reject(new Error('Company validation failed'));
+                    }
+
+                }
+                else
+                {
+                    reject(new Error('Call not found for channel id'));
+                }
+            }
+        });
+
+    })
+
+};
+
+var simulateDtmf = function(reqId, channelId, companyId, tenantId, legId,dtmf)
+{
+    return new Promise(function(fulfill, reject)
+    {
+        redisHandler.GetFromHash(reqId, channelId, function (err, hashObj)
+        {
+            if (err)
+            {
+                reject(err);
+            }
+            else
+            {
+                if(hashObj)
+                {
+                    if(hashObj["DVP-CompanyId"] && hashObj["DVP-TenantId"] && hashObj["DVP-CompanyId"] === companyId.toString() && hashObj["DVP-TenantId"] === tenantId.toString())
+                    {
+                        var callServerId = hashObj["FreeSWITCH-Switchname"];
+                        dbmodel.CallServer.find({where: [{id: callServerId}, {Activate: true}]})
+                            .then(function (csData)
+                            {
+                                if(csData)
+                                {
+                                    var ip = csData.InternalMainIP;
+                                    if (ip)
+                                    {
+                                        var dtmfUrl = "http://" + ip + ":8080/webapi/uuid_recv_dtmf?" + legId +" "+dtmf;
+
+
+                                        var options = {
+                                            method: 'GET',
+                                            uri: dtmfUrl,
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'Accept': 'application/json',
+                                                'Authorization': 'Basic ' + new Buffer(config.FreeSwitch.userName + ':' + config.FreeSwitch.password).toString('base64')
+                                            }
+                                        };
+
+                                        request(options, function (error, response, body)
+                                        {
+                                            if (error)
+                                            {
+                                                reject(error);
+                                            }
+                                            else
+                                            {
+                                                fulfill(true);
+                                            }
+                                        });
+
+                                    }
+                                    else
+                                    {
+                                        reject(new Error('Call server ip not set'));
+
+                                    }
+
+                                }
+                                else
+                                {
+                                    reject(new Error('Cannot find a call server for call'));
+                                }
+
+                            })
+                            .catch(function(err)
+                            {
+                                reject(err);
+                            });
+
+                    }
+                    else
+                    {
+                        reject(new Error('Company validation failed'));
+                    }
+
+                }
+                else
+                {
+                    reject(new Error('Call not found for channel id'));
+                }
+            }
+        });
+
+    })
+
+};
+
 var sendMessage = function(reqId, channelId, companyId, tenantId, message)
 {
     return new Promise(function(fulfill, reject)
@@ -567,6 +744,16 @@ var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
                                 dvpActionCat = 'THREEWAY';
                                 data = format("'queue_dtmf:w3@500,eavesdrop:{0}' inline", crn);
                             }
+                            else if (bargeMethod.toLowerCase() == "returnlisten")
+                            {
+                                dvpActionCat = 'RETUENLISTEN';
+                                data = format("'queue_dtmf:w0@500,eavesdrop:{0}' inline", crn);
+                            }
+                            else if (bargeMethod.toLowerCase() == "swap")
+                            {
+                                dvpActionCat = 'SWAP';
+                                data = format("'queue_dtmf:w1@500,eavesdrop:{0}' inline", crn);
+                            }
 
 
                             var options =
@@ -641,6 +828,16 @@ var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
                                                         res.end(instance);
                                                     }
                                                     else {
+
+                                                        if(body){
+                                                            var dataArr = body.split(" ");
+
+                                                            if(dataArr.length > 1 ){
+
+                                                                body = dataArr[1].trim();
+                                                            }
+                                                        }
+
                                                         var instance = messageFormatter.FormatMessage(undefined, "SendGetCommandToCallServer", true, body);
                                                         res.end(instance);
                                                     }
@@ -675,7 +872,17 @@ var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
                                                 var instance = messageFormatter.FormatMessage(error, "send msg", false, body);
                                                 res.end(instance);
                                             } else {
-                                                var instance = messageFormatter.FormatMessage(undefined, "SendGetCommandToCallServer", true, response);
+
+                                                if(body){
+                                                    var dataArr = body.split(" ");
+
+                                                    if(dataArr.length > 1 ){
+
+                                                        body = dataArr[1].trim();
+                                                    }
+                                                }
+
+                                                var instance = messageFormatter.FormatMessage(undefined, "SendGetCommandToCallServer", true, body);
                                                 res.end(instance);
                                             }
                                         });
@@ -732,6 +939,16 @@ module.exports.CallThreeway = function (tenantId, companyId, req, res) {
     CallDispatch(tenantId, companyId, "threeway", req, res);
 };
 
+module.exports.CallReturnListen = function (tenantId, companyId, req, res) {
+
+    CallDispatch(tenantId, companyId, "returnlisten", req, res);
+};
+
+module.exports.CallSwap = function (tenantId, companyId, req, res) {
+
+    CallDispatch(tenantId, companyId, "swap", req, res);
+};
+
 module.exports.CallListen = function (tenantId, companyId, req, res) {
 
     CallDispatch(tenantId, companyId, "listen", req, res);
@@ -786,4 +1003,6 @@ module.exports.callDisconnect = callDisconnect;
 module.exports.callHold = callHold;
 module.exports.callMute = callMute;
 module.exports.sendDtmf =sendDtmf;
+module.exports.simulateDtmf = simulateDtmf;
 module.exports.sendMessage = sendMessage;
+module.exports.transfer = transfer;

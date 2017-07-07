@@ -144,12 +144,9 @@ var PublishToRedis = function(reqId, pattern, message, callback)
 {
     try
     {
-        logger.debug('[DVP-MonitorRestAPI.PublishToRedis] - [%s] - Method Params - pattern : %s, message : %s', reqId, pattern, message);
-        if(client.connected)
-        {
-            var result = client.publish(pattern, message);
-            logger.debug('[DVP-MonitorRestAPI.PublishToRedis] - [%s] - REDIS PUBLISH result : %s', reqId, result);
-        }
+       logger.debug('[DVP-MonitorRestAPI.PublishToRedis] - [%s] - Method Params - pattern : %s, message : %s', reqId, pattern, message);
+       var result = client.publish(pattern, message);
+       logger.debug('[DVP-MonitorRestAPI.PublishToRedis] - [%s] - REDIS PUBLISH result : %s', reqId, result);
         callback(undefined, true);
 
     }
@@ -165,9 +162,7 @@ var GetFromSet = function(reqId, setName, callback)
     try
     {
         logger.debug('[DVP-MonitorRestAPI.GetFromSet] - [%s] - Method Params - setName : %s,', reqId, setName);
-        if(client.connected)
-        {
-            client.smembers(setName, function (err, setValues)
+        client.smembers(setName, function (err, setValues)
             {
                 if(err)
                 {
@@ -179,11 +174,6 @@ var GetFromSet = function(reqId, setName, callback)
                 }
                 callback(err, setValues);
             });
-        }
-        else
-        {
-            callback(new Error('Redis Client Disconnected'), undefined);
-        }
 
 
     }
@@ -199,9 +189,7 @@ var GetFromHash = function(reqId, hashName, callback)
     try
     {
         logger.debug('[DVP-MonitorRestAPI.GetFromHash] - [%s] - Method Params - hashName : %s,', reqId, hashName);
-        if(client.connected)
-        {
-            client.hgetall(hashName, function (err, hashObj)
+        client.hgetall(hashName, function (err, hashObj)
             {
                 if(err)
                 {
@@ -213,11 +201,6 @@ var GetFromHash = function(reqId, hashName, callback)
                 }
                 callback(err, hashObj);
             });
-        }
-        else
-        {
-            callback(new Error('Redis Client Disconnected'), undefined);
-        }
     }
     catch(ex)
     {
@@ -260,9 +243,7 @@ var MGetObjects = function(reqId, keyArr, callback)
 var GetKeys = function(reqId, pattern, callback)
 {
     logger.debug('[DVP-MonitorRestAPI.GetKeys] - [%s] - Method Params - pattern : %s,', reqId, pattern);
-    if(client.connected)
-    {
-        client.keys(pattern, function (err, keyArr)
+    client.keys(pattern, function (err, keyArr)
         {
             if(err)
             {
@@ -274,11 +255,6 @@ var GetKeys = function(reqId, pattern, callback)
             }
             callback(err, keyArr);
         });
-    }
-    else
-    {
-        callback(new Error('Redis Client Disconnected'), undefined);
-    }
 }
 
 client.on('error', function(msg)

@@ -1,16 +1,87 @@
-var redis = require("redis");
-var Config = require('config');
+var redis = require("ioredis");
+var config = require('config');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 
-var redisIp = Config.Redis.ip;
-var redisPort = Config.Redis.port;
-var redisPassword = Config.Redis.password;
+var redisip = config.Redis.ip;
+var redisport = config.Redis.port;
+var redispass = config.Redis.password;
+var redismode = config.Redis.mode;
+var redisdb = config.Redis.db;
 
-var client = redis.createClient(redisPort, redisIp);
 
-client.auth(redisPassword, function (redisResp) {
-    console.log("Redis Auth Response : " + redisResp);
-});
+
+var redisSetting =  {
+    port:redisport,
+    host:redisip,
+    family: 4,
+    password: redispass,
+    db: redisdb,
+    retryStrategy: function (times) {
+        var delay = Math.min(times * 50, 2000);
+        return delay;
+    },
+    reconnectOnError: function (err) {
+
+        return true;
+    }
+};
+
+if(redismode == 'sentinel'){
+
+    if(config.Redis.sentinels && config.Redis.sentinels.hosts && config.Redis.sentinels.port, config.Redis.sentinels.name){
+        var sentinelHosts = config.Redis.sentinels.hosts.split(',');
+        if(Array.isArray(sentinelHosts) && sentinelHosts.length > 2){
+            var sentinelConnections = [];
+
+            sentinelHosts.forEach(function(item){
+
+                sentinelConnections.push({host: item, port:config.Redis.sentinels.port})
+
+            })
+
+            redisSetting = {
+                sentinels:sentinelConnections,
+                name: config.Redis.sentinels.name,
+                password: redispass
+            }
+
+        }else{
+
+            console.log("No enough sentinel servers found .........");
+        }
+
+    }
+}
+
+var client = undefined;
+
+if(redismode != "cluster") {
+    client = new redis(redisSetting);
+}else{
+
+    var redisHosts = redisip.split(",");
+    if(Array.isArray(redisHosts)){
+
+
+        redisSetting = [];
+        redisHosts.forEach(function(item){
+            redisSetting.push({
+                host: item,
+                port: redisport,
+                family: 4,
+                password: redispass});
+        });
+
+        var client = new redis.Cluster([redisSetting]);
+
+    }else{
+
+        client = new redis(redisSetting);
+    }
+
+
+}
+
 
 var SetObject = function(reqId, key, value, callback)
 {
@@ -73,12 +144,9 @@ var PublishToRedis = function(reqId, pattern, message, callback)
 {
     try
     {
-        logger.debug('[DVP-MonitorRestAPI.PublishToRedis] - [%s] - Method Params - pattern : %s, message : %s', reqId, pattern, message);
-        if(client.connected)
-        {
-            var result = client.publish(pattern, message);
-            logger.debug('[DVP-MonitorRestAPI.PublishToRedis] - [%s] - REDIS PUBLISH result : %s', reqId, result);
-        }
+       logger.debug('[DVP-MonitorRestAPI.PublishToRedis] - [%s] - Method Params - pattern : %s, message : %s', reqId, pattern, message);
+       var result = client.publish(pattern, message);
+       logger.debug('[DVP-MonitorRestAPI.PublishToRedis] - [%s] - REDIS PUBLISH result : %s', reqId, result);
         callback(undefined, true);
 
     }
@@ -94,9 +162,7 @@ var GetFromSet = function(reqId, setName, callback)
     try
     {
         logger.debug('[DVP-MonitorRestAPI.GetFromSet] - [%s] - Method Params - setName : %s,', reqId, setName);
-        if(client.connected)
-        {
-            client.smembers(setName, function (err, setValues)
+        client.smembers(setName, function (err, setValues)
             {
                 if(err)
                 {
@@ -108,11 +174,6 @@ var GetFromSet = function(reqId, setName, callback)
                 }
                 callback(err, setValues);
             });
-        }
-        else
-        {
-            callback(new Error('Redis Client Disconnected'), undefined);
-        }
 
 
     }
@@ -128,9 +189,7 @@ var GetFromHash = function(reqId, hashName, callback)
     try
     {
         logger.debug('[DVP-MonitorRestAPI.GetFromHash] - [%s] - Method Params - hashName : %s,', reqId, hashName);
-        if(client.connected)
-        {
-            client.hgetall(hashName, function (err, hashObj)
+        client.hgetall(hashName, function (err, hashObj)
             {
                 if(err)
                 {
@@ -142,11 +201,6 @@ var GetFromHash = function(reqId, hashName, callback)
                 }
                 callback(err, hashObj);
             });
-        }
-        else
-        {
-            callback(new Error('Redis Client Disconnected'), undefined);
-        }
     }
     catch(ex)
     {
@@ -189,9 +243,7 @@ var MGetObjects = function(reqId, keyArr, callback)
 var GetKeys = function(reqId, pattern, callback)
 {
     logger.debug('[DVP-MonitorRestAPI.GetKeys] - [%s] - Method Params - pattern : %s,', reqId, pattern);
-    if(client.connected)
-    {
-        client.keys(pattern, function (err, keyArr)
+    client.keys(pattern, function (err, keyArr)
         {
             if(err)
             {
@@ -203,11 +255,6 @@ var GetKeys = function(reqId, pattern, callback)
             }
             callback(err, keyArr);
         });
-    }
-    else
-    {
-        callback(new Error('Redis Client Disconnected'), undefined);
-    }
 }
 
 client.on('error', function(msg)

@@ -727,6 +727,74 @@ server.get('/DVP/API/:version/MonitorRestAPI/SipRegistrations', authorization({r
 
 });
 
+server.get('/DVP/API/:version/MonitorRestAPI/TrunkMonitoring/Trunks', authorization({resource:"tenant", action:"read"}), function(req, res, next)
+{
+    var reqId = nodeUuid.v1();
+    var emptyList = [];
+    var jsonString = '';
+    try
+    {
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
+
+        logger.debug('[DVP-MonitorRestAPI.TrunkMonitoring.Trunks] - [%s] - HTTP Request Received', reqId);
+
+        redisHandler.GetKeys(reqId, 'TRUNK_AVAILABILITY:*', function(err, trunks)
+        {
+            if(trunks && trunks.length > 0)
+            {
+                //get all user hash sets from redis
+
+                redisHandler.MGetObjects(reqId, trunks, function(err, trList)
+                {
+                    if(err)
+                    {
+                        jsonString = messageFormatter.FormatMessage(err, "Error occurred while getting trunks", false, emptyList);
+                        logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                        res.end(jsonString);
+                    }
+                    else
+                    {
+                        jsonString = messageFormatter.FormatMessage(null, 'Operation Successfull', true, JSON.parse(trList));
+                        logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                        res.end(jsonString);
+                    }
+                });
+
+            }
+            else
+            {
+                if(err)
+                {
+                    logger.error('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - Error occurred while getting trunks', reqId, err);
+                    jsonString = messageFormatter.FormatMessage(err, "Error occurred", false, emptyList);
+                }
+                else
+                {
+                    logger.warn('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - No trunks found on redis for monitoring', reqId);
+                    jsonString = messageFormatter.FormatMessage(null, "Operation Success", true, emptyList);
+                }
+
+                res.end(jsonString);
+            }
+        });
+    }
+    catch(ex)
+    {
+        jsonString = messageFormatter.FormatMessage(ex, "Error", false, emptyList);
+        logger.error('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonStr);
+    }
+
+    return next();
+
+});
+
 server.get('/DVP/API/:version/MonitorRestAPI/SipRegistrations/User/:user', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
 {
     var reqId = nodeUuid.v1();

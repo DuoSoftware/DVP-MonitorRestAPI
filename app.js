@@ -760,7 +760,13 @@ server.get('/DVP/API/:version/MonitorRestAPI/TrunkMonitoring/Trunks', authorizat
                     }
                     else
                     {
-                        jsonString = messageFormatter.FormatMessage(null, 'Operation Successfull', true, JSON.parse(trList));
+                        var arr = [];
+
+                        trList.forEach(function(tr)
+                        {
+                            arr.push(JSON.parse(tr));
+                        })
+                        jsonString = messageFormatter.FormatMessage(null, 'Operation Successfull', true, arr);
                         logger.debug('[DVP-MonitorRestAPI.GetSipRegDetailsByCompany] - [%s] - API RESPONSE : %s', reqId, jsonString);
                         res.end(jsonString);
                     }

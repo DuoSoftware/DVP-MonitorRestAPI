@@ -13,7 +13,7 @@
     "node-uuid": "^1.4.3",
     "redis": "^2.6.0-2",
     "request": "^2.69.0",
-    "restify": "^3.0.1",
+    "restify": "^4.0.3",
     "restify-jwt": "^0.4.0",
     "string-format": "^0.5.0",
     "stringformat": "0.0.5",

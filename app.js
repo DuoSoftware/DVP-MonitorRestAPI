@@ -1611,22 +1611,30 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls', authorization({resource:"sy
                                 }
                                 else
                                 {
-                                    //TOTALLY NEW LEG WITH NO OTHER LEG - ADDED AS THE FIRST ITEM IN MAIN LIST
-                                    if (hashList[key]['CHANNEL-BRIDGE-TIME']) {
-                                        var a = moment();
-                                        var b = moment(hashList[key]['CHANNEL-BRIDGE-TIME']);
-                                        var duration = moment.duration(a.diff(b));
+                                    if(otherLegChanList[key] && otherLegChanList[key].length > 0)
+                                    {
+                                        calls[otherLegChanList[key][0]].push(hashList[key]);
+                                    }
+                                    else
+                                    {
+                                        //TOTALLY NEW LEG WITH NO OTHER LEG - ADDED AS THE FIRST ITEM IN MAIN LIST
+                                        if (hashList[key]['CHANNEL-BRIDGE-TIME']) {
+                                            var a = moment();
+                                            var b = moment(hashList[key]['CHANNEL-BRIDGE-TIME']);
+                                            var duration = moment.duration(a.diff(b));
 
-                                        hashList[key]['BRIDGE-DURATION'] = duration.hours() + 'h ' + duration.minutes() + 'm ' + duration.seconds() + 's';
+                                            hashList[key]['BRIDGE-DURATION'] = duration.hours() + 'h ' + duration.minutes() + 'm ' + duration.seconds() + 's';
+                                        }
+
+                                        callChannels.push(hashList[key]);
+                                        usedChanList[key] = key;
+                                        calls[key] = callChannels;
+
+
+                                        otherLegChanList[otherLegUuid] = [];
+                                        otherLegChanList[otherLegUuid].push(key);
                                     }
 
-                                    callChannels.push(hashList[key]);
-                                    usedChanList[key] = key;
-                                    calls[key] = callChannels;
-
-
-                                    otherLegChanList[otherLegUuid] = [];
-                                    otherLegChanList[otherLegUuid].push(key);
 
                                 }
 

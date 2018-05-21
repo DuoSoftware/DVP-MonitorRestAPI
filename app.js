@@ -1613,6 +1613,13 @@ server.get('/DVP/API/:version/MonitorRestAPI/Calls', authorization({resource:"sy
                                 {
                                     if(otherLegChanList[key] && otherLegChanList[key].length > 0)
                                     {
+                                        if (hashList[key]['CHANNEL-BRIDGE-TIME']) {
+                                            var a = moment();
+                                            var b = moment(hashList[key]['CHANNEL-BRIDGE-TIME']);
+                                            var duration = moment.duration(a.diff(b));
+
+                                            hashList[key]['BRIDGE-DURATION'] = duration.hours() + 'h ' + duration.minutes() + 'm ' + duration.seconds() + 's';
+                                        }
                                         calls[otherLegChanList[key][0]].push(hashList[key]);
                                     }
                                     else

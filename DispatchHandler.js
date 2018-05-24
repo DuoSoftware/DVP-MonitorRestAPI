@@ -101,7 +101,7 @@ var callDisconnect = function(reqId, channelId, companyId, tenantId)
             }
             else
             {
-                if(hashObj)
+                if(hashObj && Object.keys(hashObj).length > 0)
                 {
                     if(hashObj["DVP-CompanyId"] && hashObj["DVP-TenantId"] && hashObj["DVP-CompanyId"] === companyId.toString() && hashObj["DVP-TenantId"] === tenantId.toString())
                     {

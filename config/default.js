@@ -1,22 +1,22 @@
 module.exports = {
   "DB": {
     "Type":"postgres",
-    "User":"duo",
-    "Password":"DuoS123",
+    "User":"",
+    "Password":"",
     "Port":5432,
-    "Host":"104.236.231.11",
-    "Database":"duo"
+    "Host":"",
+    "Database":""
   },
 
   "Redis":
   {
     "mode":"sentinel",//instance, cluster, sentinel
-    "ip": "45.55.142.207",
+    "ip": "",
     "port": 6389,
-    "user": "duo",
-    "password": "DuoS123",
+    "user": "",
+    "password": "",
     "sentinels":{
-      "hosts": "138.197.90.92,45.55.205.92,138.197.90.92",
+      "hosts": "",
       "port":16389,
       "name":"redis-cluster"
     }
@@ -27,13 +27,13 @@ module.exports = {
   "Security":
   {
 
-    "ip" : "45.55.142.207",
+    "ip" : "",
     "port": 6389,
-    "user": "duo",
-    "password": "DuoS123",
+    "user": "",
+    "password": "",
     "mode":"sentinel",//instance, cluster, sentinel
     "sentinels":{
-      "hosts": "138.197.90.92,45.55.205.92,138.197.90.92",
+      "hosts": "",
       "port":16389,
       "name":"redis-cluster"
     }
@@ -45,7 +45,7 @@ module.exports = {
     "Version":"1.0.0.0"
   },
   "FreeSwitch":{
-    "userName":"freeswitch",
-    "password":"works"
+    "userName":"",
+    "password":""
   }
 };

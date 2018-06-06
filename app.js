@@ -2523,7 +2523,7 @@ server.post('/DVP/API/:version/MonitorRestAPI/Direct/hungup', authorization({res
             })
             .catch(function(err)
             {
-                var jsonString = messageFormatter.FormatMessage(err, "EXCEPTION", false, false);
+                var jsonString = messageFormatter.FormatMessage(err, err.message, false, false);
                 logger.error('[DVP-CallDisconnect] - Request response : %s ', jsonString);
                 res.end(jsonString);
             });

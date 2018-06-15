@@ -28,7 +28,7 @@ var getCallServerId = function (reqId, channelId, res) {
                 dbmodel.CallServer.find({where: [{id: callServerId}, {Activate: true}]}).then(function (csData) {
                     if (csData) {
                         logger.debug("DVP-ClusterConfiguration.EditCallServer id %d Found", reqId);
-                        var callserverIp = csData.InternalMainIP;
+                        var callserverIp = csData.MainIp;
                         return callserverIp;
                     }
                     else {
@@ -111,7 +111,7 @@ var callDisconnect = function(reqId, channelId, companyId, tenantId)
                             {
                                 if(csData)
                                 {
-                                    var ip = csData.InternalMainIP;
+                                    var ip = csData.MainIp;
                                     if (ip)
                                     {
                                         var options = {
@@ -195,7 +195,7 @@ var callHold = function(reqId, channelId, companyId, tenantId, hold)
                             {
                                 if(csData)
                                 {
-                                    var ip = csData.InternalMainIP;
+                                    var ip = csData.MainIp;
                                     if (ip)
                                     {
                                         var holdUrl = "http://" + ip + ":8080/webapi/uuid_hold?" + channelId;
@@ -284,7 +284,7 @@ var callMute = function(reqId, channelId, companyId, tenantId, mute)
                             {
                                 if(csData)
                                 {
-                                    var ip = csData.InternalMainIP;
+                                    var ip = csData.MainIp;
                                     if (ip)
                                     {
                                         var muteUrl = "http://" + ip + ":8080/webapi/uuid_audio?" + channelId+" start write mute -4";
@@ -373,7 +373,7 @@ var sendDtmf = function(reqId, channelId, companyId, tenantId, dtmf)
                             {
                                 if(csData)
                                 {
-                                    var ip = csData.InternalMainIP;
+                                    var ip = csData.MainIp;
                                     if (ip)
                                     {
                                         var dtmfUrl = "http://" + ip + ":8080/webapi/uuid_send_dtmf?" + channelId+" "+dtmf;
@@ -460,7 +460,7 @@ var transfer= function(reqId, channelId, companyId, tenantId,legId, number)
                             {
                                 if(csData)
                                 {
-                                    var ip = csData.InternalMainIP;
+                                    var ip = csData.MainIp;
                                     if (ip)
                                     {
                                         var context = util.format("XML PBXFeatures|%d|%d",tenantId, companyId);
@@ -550,7 +550,7 @@ var simulateDtmf = function(reqId, channelId, companyId, tenantId, legId,dtmf)
                             {
                                 if(csData)
                                 {
-                                    var ip = csData.InternalMainIP;
+                                    var ip = csData.MainIp;
                                     if (ip)
                                     {
                                         var dtmfUrl = "http://" + ip + ":8080/webapi/uuid_recv_dtmf?" + legId +" "+dtmf;
@@ -637,7 +637,7 @@ var sendMessage = function(reqId, channelId, companyId, tenantId, message)
                             {
                                 if(csData)
                                 {
-                                    var ip = csData.InternalMainIP;
+                                    var ip = csData.MainIp;
                                     if (ip)
                                     {
                                         var messageUrl = "http://" + ip + ":8080/webapi/uuid_chat?" + channelId+" "+message;
@@ -729,7 +729,7 @@ var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
                     if (csData)
                     {
                         logger.debug("DVP-MonitorRestAPI.CallDispatch id %d Found", reqId);
-                        var ip = csData.InternalMainIP;
+                        var ip = csData.MainIp;
                         if (ip)
                         {
                             var dvpActionCat = 'LISTEN';

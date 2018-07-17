@@ -24,8 +24,8 @@ var getCallServerId = function (reqId, channelId, res) {
         }
         else {
             if (hashObj) {
-                var callServerId = hashObj["FreeSWITCH-Switchname"];
-                dbmodel.CallServer.find({where: [{id: callServerId}, {Activate: true}]}).then(function (csData) {
+                var callServerName = hashObj["FreeSWITCH-Hostname"];
+                dbmodel.CallServer.find({where: [{Name: callServerName}, {Activate: true}]}).then(function (csData) {
                     if (csData) {
                         logger.debug("DVP-ClusterConfiguration.EditCallServer id %d Found", reqId);
                         var callserverIp = csData.MainIp;
@@ -105,8 +105,8 @@ var callDisconnect = function(reqId, channelId, companyId, tenantId)
                 {
                     if(hashObj["DVP-CompanyId"] && hashObj["DVP-TenantId"] && hashObj["DVP-CompanyId"] === companyId.toString() && hashObj["DVP-TenantId"] === tenantId.toString())
                     {
-                        var callServerId = hashObj["FreeSWITCH-Switchname"];
-                        dbmodel.CallServer.find({where: [{id: callServerId}, {Activate: true}]})
+                        var callServerName = hashObj["FreeSWITCH-Hostname"];
+                        dbmodel.CallServer.find({where: [{Name: callServerName}, {Activate: true}]})
                             .then(function (csData)
                             {
                                 if(csData)
@@ -189,8 +189,8 @@ var callHold = function(reqId, channelId, companyId, tenantId, hold)
                 {
                     if(hashObj["DVP-CompanyId"] && hashObj["DVP-TenantId"] && hashObj["DVP-CompanyId"] === companyId.toString() && hashObj["DVP-TenantId"] === tenantId.toString())
                     {
-                        var callServerId = hashObj["FreeSWITCH-Switchname"];
-                        dbmodel.CallServer.find({where: [{id: callServerId}, {Activate: true}]})
+                        var callServerName = hashObj["FreeSWITCH-Hostname"];
+                        dbmodel.CallServer.find({where: [{Name: callServerName}, {Activate: true}]})
                             .then(function (csData)
                             {
                                 if(csData)
@@ -278,8 +278,8 @@ var callMute = function(reqId, channelId, companyId, tenantId, mute)
                 {
                     if(hashObj["DVP-CompanyId"] && hashObj["DVP-TenantId"] && hashObj["DVP-CompanyId"] === companyId.toString() && hashObj["DVP-TenantId"] === tenantId.toString())
                     {
-                        var callServerId = hashObj["FreeSWITCH-Switchname"];
-                        dbmodel.CallServer.find({where: [{id: callServerId}, {Activate: true}]})
+                        var callServerName = hashObj["FreeSWITCH-Hostname"];
+                        dbmodel.CallServer.find({where: [{Name: callServerName}, {Activate: true}]})
                             .then(function (csData)
                             {
                                 if(csData)
@@ -367,8 +367,8 @@ var sendDtmf = function(reqId, channelId, companyId, tenantId, dtmf)
                 {
                     if(hashObj["DVP-CompanyId"] && hashObj["DVP-TenantId"] && hashObj["DVP-CompanyId"] === companyId.toString() && hashObj["DVP-TenantId"] === tenantId.toString())
                     {
-                        var callServerId = hashObj["FreeSWITCH-Switchname"];
-                        dbmodel.CallServer.find({where: [{id: callServerId}, {Activate: true}]})
+                        var callServerName = hashObj["FreeSWITCH-Hostname"];
+                        dbmodel.CallServer.find({where: [{Name: callServerName}, {Activate: true}]})
                             .then(function (csData)
                             {
                                 if(csData)
@@ -454,8 +454,8 @@ var transfer= function(reqId, channelId, companyId, tenantId,legId, number)
                 {
                     if(hashObj["DVP-CompanyId"] && hashObj["DVP-TenantId"] && hashObj["DVP-CompanyId"] === companyId.toString() && hashObj["DVP-TenantId"] === tenantId.toString())
                     {
-                        var callServerId = hashObj["FreeSWITCH-Switchname"];
-                        dbmodel.CallServer.find({where: [{id: callServerId}, {Activate: true}]})
+                        var callServerName = hashObj["FreeSWITCH-Hostname"];
+                        dbmodel.CallServer.find({where: [{Name: callServerName}, {Activate: true}]})
                             .then(function (csData)
                             {
                                 if(csData)
@@ -544,8 +544,8 @@ var simulateDtmf = function(reqId, channelId, companyId, tenantId, legId,dtmf)
                 {
                     if(hashObj["DVP-CompanyId"] && hashObj["DVP-TenantId"] && hashObj["DVP-CompanyId"] === companyId.toString() && hashObj["DVP-TenantId"] === tenantId.toString())
                     {
-                        var callServerId = hashObj["FreeSWITCH-Switchname"];
-                        dbmodel.CallServer.find({where: [{id: callServerId}, {Activate: true}]})
+                        var callServerName = hashObj["FreeSWITCH-Hostname"];
+                        dbmodel.CallServer.find({where: [{Name: callServerName}, {Activate: true}]})
                             .then(function (csData)
                             {
                                 if(csData)
@@ -631,8 +631,8 @@ var sendMessage = function(reqId, channelId, companyId, tenantId, message)
                 {
                     if(hashObj["DVP-CompanyId"] && hashObj["DVP-TenantId"] && hashObj["DVP-CompanyId"] === companyId.toString() && hashObj["DVP-TenantId"] === tenantId.toString())
                     {
-                        var callServerId = hashObj["FreeSWITCH-Switchname"];
-                        dbmodel.CallServer.find({where: [{id: callServerId}, {Activate: true}]})
+                        var callServerName = hashObj["FreeSWITCH-Hostname"];
+                        dbmodel.CallServer.find({where: [{Name: callServerName}, {Activate: true}]})
                             .then(function (csData)
                             {
                                 if(csData)
@@ -723,8 +723,8 @@ var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
         {
             if (hashObj)
             {
-                var callServerId = hashObj["FreeSWITCH-Switchname"];
-                dbmodel.CallServer.find({where: [{id: callServerId}, {Activate: true}]}).then(function (csData)
+                var callServerName = hashObj["FreeSWITCH-Hostname"];
+                dbmodel.CallServer.find({where: [{Name: callServerName}, {Activate: true}]}).then(function (csData)
                 {
                     if (csData)
                     {

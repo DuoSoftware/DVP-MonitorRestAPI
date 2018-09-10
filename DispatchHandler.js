@@ -32,16 +32,16 @@ var getCallServerId = function (reqId, channelId, res) {
                         return callserverIp;
                     }
                     else {
-                        var err = new Error("invalid callServerId.");
-                        logger.error("DVP-GetCallServerByID id %d Failed", callServerId, err);
-                        var instance = messageFormatter.FormatMessage(err, "invalid callServerId", false, undefined);
+                        var err = new Error("invalid callServerName.");
+                        logger.error("DVP-GetCallServerByID id %d Failed", callServerName, err);
+                        var instance = messageFormatter.FormatMessage(err, "invalid callServerName", false, undefined);
                         res.write(instance);
                         res.end();
                     }
 
                 }).catch(function (err) {
 
-                    logger.error("DVP-ClusterConfiguration.GetCallServerByID id %d Failed", callServerId, err);
+                    logger.error("DVP-ClusterConfiguration.GetCallServerByID id %d Failed", callServerName, err);
 
                     var instance = messageFormatter.FormatMessage(err, "Get callserver by ID", false, undefined);
                     res.write(instance);
@@ -81,11 +81,6 @@ var GetFullQualifiedSipUri = function (tenantId, companyId, destination, res) {
         res.write(messageFormatter.FormatMessage(err, "Extension NotFound or error", false, undefined));
         res.end();
     });
-
-};
-
-var getCallServerId = function (reqId, channelId, res) {
-
 
 };
 
@@ -904,15 +899,15 @@ var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
 
                     }
                     else {
-                        var err = new Error("invalid callServerId.");
-                        logger.error("DVP-GetCallServerByID id %d Failed", callServerId, err);
-                        var instance = messageFormatter.FormatMessage(err, "invalid callServerId", false, undefined);
+                        var err = new Error("invalid callServerName.");
+                        logger.error("DVP-GetCallServerByID id %d Failed", callServerName, err);
+                        var instance = messageFormatter.FormatMessage(err, "invalid callServerName", false, undefined);
                         res.write(instance);
                         res.end();
                     }
 
                 }).catch(function (err) {
-                    logger.error("DVP-ClusterConfiguration.GetCallServerByID id %d Failed", callServerId, err);
+                    logger.error("DVP-ClusterConfiguration.GetCallServerByID id %d Failed", callServerName, err);
                     var instance = messageFormatter.FormatMessage(err, "Get callserver by ID", false, undefined);
                     res.write(instance);
                     res.end();

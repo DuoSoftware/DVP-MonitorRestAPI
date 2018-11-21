@@ -796,7 +796,8 @@ var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
                                         {
                                             if (user)
                                             {
-                                                var tempURL = user.SipUACEndpoint.SipUsername + "@" + user.SipUACEndpoint.CloudEndUser.Domain;
+                                                console.log('Destination : ' + destination);
+                                                var tempURL = destination + "@" + user.SipUACEndpoint.CloudEndUser.Domain;
 
                                                 destination = tempURL ? format("user/{0}", tempURL) : format("user/{0}", destination);
 

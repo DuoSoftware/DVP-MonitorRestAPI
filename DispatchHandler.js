@@ -782,7 +782,7 @@ var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
                                     }
                                     if(req.params.listenskill)
                                     {
-                                        dialoption.append("listen_skill_data="+req.params.listenskill);
+                                        dialoption.concat("listen_skill_data="+req.params.listenskill);
                                     }
 
                                     logger.debug('[DVP-MonitorRestAPI.CallDispatch] - [%s] - options : %s', reqId, dialoption);

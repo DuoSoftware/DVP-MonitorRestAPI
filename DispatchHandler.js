@@ -783,7 +783,7 @@ var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
                                     if(req.query.listenskill)
                                     {
                                         console.log("Skill: "+ req.query.listenskill);
-                                        dialoption.concat("listen_skill_data="+req.query.listenskill);
+                                        dialoption = dialoption.concat(",listen_skill_data="+req.query.listenskill);
                                         console.log(dialoption);
                                     }
 

@@ -776,6 +776,11 @@ var CallDispatch = function (tenantId, companyId, bargeMethod, req, res) {
 
                                     var dialoption = format("return_ring_ready=false,origination_uuid={0},origination_caller_id_number={1},DVP_ACTION_CAT={2},DVP_OPERATION_CAT=PRIVATE_USER,companyid={3},tenantid={4},DVP_CALLMONITOR_OTHER_LEG={5}", reqId, channelId, dvpActionCat, companyId, tenantId, channelId);
 
+                                    if(req.query.callernum)
+                                    {
+                                        dialoption = format("return_ring_ready=false,origination_uuid={0},origination_caller_id_number={1},DVP_ACTION_CAT={2},DVP_OPERATION_CAT=PRIVATE_USER,companyid={3},tenantid={4},DVP_CALLMONITOR_OTHER_LEG={5}", reqId, req.query.callernum, dvpActionCat, companyId, tenantId, channelId);
+                                    }
+
                                     logger.debug('[DVP-MonitorRestAPI.CallDispatch] - [%s] - options : %s', reqId, dialoption);
 
                                     if (protocol.toLowerCase() == "user")

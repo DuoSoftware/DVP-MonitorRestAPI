@@ -3029,7 +3029,15 @@ server.get('/DVP/API/:version/MonitorRestAPI/Campaigns', authorization({resource
                     }
                     else
                     {
-                        var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, campaigns);
+                        var filtered = [];
+                        if(campaigns.length > 0)
+                        {
+                            filtered = campaigns[0].filter(function (el) {
+                                return el != null;
+                            });
+                        }
+
+                        var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, filtered);
                         logger.debug('[DVP-MonitorRestAPI.GetCampaigns] - [%s] - API RESPONSE : %s', reqId, jsonString);
                         res.end(jsonString);
                     }
@@ -3079,7 +3087,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/Campaign/:campaignId/Calls', author
             }
             else
             {
-                campRedisHandler.MultipleHashHGetAll(reqId, hashIds, function (err, campaigns)
+                campRedisHandler.MultipleHashHGetAll(reqId, hashIds, function (err, campaignsCalls)
                 {
                     if (err)
                     {
@@ -3089,7 +3097,15 @@ server.get('/DVP/API/:version/MonitorRestAPI/Campaign/:campaignId/Calls', author
                     }
                     else
                     {
-                        var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, campaigns);
+                        var filtered = [];
+                        if(campaignsCalls.length > 0)
+                        {
+                            filtered = campaignsCalls[0].filter(function (el) {
+                                return el != null;
+                            });
+                        }
+
+                        var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, filtered);
                         logger.debug('[DVP-MonitorRestAPI.GetCampaignCalls] - [%s] - API RESPONSE : %s', reqId, jsonString);
                         res.end(jsonString);
                     }

@@ -3030,11 +3030,15 @@ server.get('/DVP/API/:version/MonitorRestAPI/Campaigns', authorization({resource
                     else
                     {
                         var filtered = [];
+
                         if(campaigns.length > 0)
                         {
-                            filtered = campaigns[0].filter(function (el) {
-                                return el != null;
-                            });
+                            campaigns.forEach(function(campTemp)
+                            {
+                                filtered.push(campTemp[1])
+                            })
+
+
                         }
 
                         var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, filtered);

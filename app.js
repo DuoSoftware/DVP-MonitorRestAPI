@@ -3102,11 +3102,14 @@ server.get('/DVP/API/:version/MonitorRestAPI/Campaign/:campaignId/Calls', author
                     else
                     {
                         var filtered = [];
+
                         if(campaignsCalls.length > 0)
                         {
-                            filtered = campaignsCalls[0].filter(function (el) {
-                                return el != null;
-                            });
+                            campaignsCalls.forEach(function(call)
+                            {
+                                filtered.push(call[1])
+                            })
+
                         }
 
                         var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, filtered);

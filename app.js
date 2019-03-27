@@ -3001,6 +3001,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/Campaigns', authorization({resource
 
         var companyId = req.user.company;
         var tenantId = req.user.tenant;
+        var opStatus = req.query.OperationalStatus;
 
         if (!companyId || !tenantId)
         {
@@ -3040,6 +3041,13 @@ server.get('/DVP/API/:version/MonitorRestAPI/Campaigns', authorization({resource
 
 
                         }
+                        
+                        if(opStatus)
+                        {
+                            filtered = filtered.filter((item)=>{
+                                return item.OperationalStatus === opStatus
+                            })
+                        }
 
                         var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, filtered);
                         logger.debug('[DVP-MonitorRestAPI.GetCampaigns] - [%s] - API RESPONSE : %s', reqId, jsonString);
@@ -3073,6 +3081,7 @@ server.get('/DVP/API/:version/MonitorRestAPI/Campaign/:campaignId/Calls', author
         var companyId = req.user.company;
         var tenantId = req.user.tenant;
         var campId = req.params.campaignId;
+        var dialState = req.query.DialState;
 
         if (!companyId || !tenantId)
         {
@@ -3110,6 +3119,13 @@ server.get('/DVP/API/:version/MonitorRestAPI/Campaign/:campaignId/Calls', author
                                 filtered.push(call[1])
                             })
 
+                        }
+
+                        if(dialState)
+                        {
+                            filtered = filtered.filter((item)=>{
+                                return item.DialState === dialState
+                            })
                         }
 
                         var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, filtered);

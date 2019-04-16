@@ -6,7 +6,6 @@ var redisip = config.Redis.ip;
 var redisport = config.Redis.port;
 var redispass = config.Redis.password;
 var redismode = config.Redis.mode;
-var redisdb = config.Redis.db;
 
 
 
@@ -15,7 +14,7 @@ var redisSetting =  {
     host:redisip,
     family: 4,
     password: redispass,
-    db: 0,
+    db: 7,
     retryStrategy: function (times) {
         var delay = Math.min(times * 50, 2000);
         return delay;
@@ -69,6 +68,7 @@ if(redismode != "cluster") {
                 host: item,
                 port: redisport,
                 family: 4,
+                db: 7,
                 password: redispass});
         });
 
@@ -144,9 +144,9 @@ var PublishToRedis = function(reqId, pattern, message, callback)
 {
     try
     {
-       logger.debug('[DVP-MonitorRestAPI.PublishToRedis] - [%s] - Method Params - pattern : %s, message : %s', reqId, pattern, message);
-       var result = client.publish(pattern, message);
-       logger.debug('[DVP-MonitorRestAPI.PublishToRedis] - [%s] - REDIS PUBLISH result : %s', reqId, result);
+        logger.debug('[DVP-MonitorRestAPI.PublishToRedis] - [%s] - Method Params - pattern : %s, message : %s', reqId, pattern, message);
+        var result = client.publish(pattern, message);
+        logger.debug('[DVP-MonitorRestAPI.PublishToRedis] - [%s] - REDIS PUBLISH result : %s', reqId, result);
         callback(undefined, true);
 
     }
@@ -163,17 +163,17 @@ var GetFromSet = function(reqId, setName, callback)
     {
         logger.debug('[DVP-MonitorRestAPI.GetFromSet] - [%s] - Method Params - setName : %s,', reqId, setName);
         client.smembers(setName, function (err, setValues)
+        {
+            if(err)
             {
-                if(err)
-                {
-                    logger.error('[DVP-MonitorRestAPI.GetFromSet] - [%s] - REDIS SMEMBERS failed', reqId, err);
-                }
-                else
-                {
-                    logger.debug('[DVP-MonitorRestAPI.GetFromSet] - [%s] - REDIS SMEMBERS success', reqId);
-                }
-                callback(err, setValues);
-            });
+                logger.error('[DVP-MonitorRestAPI.GetFromSet] - [%s] - REDIS SMEMBERS failed', reqId, err);
+            }
+            else
+            {
+                logger.debug('[DVP-MonitorRestAPI.GetFromSet] - [%s] - REDIS SMEMBERS success', reqId);
+            }
+            callback(err, setValues);
+        });
 
 
     }
@@ -190,17 +190,17 @@ var GetFromHash = function(reqId, hashName, callback)
     {
         logger.debug('[DVP-MonitorRestAPI.GetFromHash] - [%s] - Method Params - hashName : %s,', reqId, hashName);
         client.hgetall(hashName, function (err, hashObj)
+        {
+            if(err)
             {
-                if(err)
-                {
-                    logger.error('[DVP-MonitorRestAPI.GetFromHash] - [%s] - REDIS HGETALL failed', reqId, err);
-                }
-                else
-                {
-                    logger.debug('[DVP-MonitorRestAPI.GetFromHash] - [%s] - REDIS HGETALL success', reqId);
-                }
-                callback(err, hashObj);
-            });
+                logger.error('[DVP-MonitorRestAPI.GetFromHash] - [%s] - REDIS HGETALL failed', reqId, err);
+            }
+            else
+            {
+                logger.debug('[DVP-MonitorRestAPI.GetFromHash] - [%s] - REDIS HGETALL success', reqId);
+            }
+            callback(err, hashObj);
+        });
     }
     catch(ex)
     {
@@ -266,17 +266,17 @@ var GetKeys = function(reqId, pattern, callback)
 {
     logger.debug('[DVP-MonitorRestAPI.GetKeys] - [%s] - Method Params - pattern : %s,', reqId, pattern);
     client.keys(pattern, function (err, keyArr)
+    {
+        if(err)
         {
-            if(err)
-            {
-                logger.error('[DVP-MonitorRestAPI.GetKeys] - [%s] - REDIS MATCHKEYS failed', reqId, err);
-            }
-            else
-            {
-                logger.debug('[DVP-MonitorRestAPI.GetKeys] - [%s] - REDIS MATCHKEYS success', reqId);
-            }
-            callback(err, keyArr);
-        });
+            logger.error('[DVP-MonitorRestAPI.GetKeys] - [%s] - REDIS MATCHKEYS failed', reqId, err);
+        }
+        else
+        {
+            logger.debug('[DVP-MonitorRestAPI.GetKeys] - [%s] - REDIS MATCHKEYS success', reqId);
+        }
+        callback(err, keyArr);
+    });
 }
 
 client.on('error', function(msg)

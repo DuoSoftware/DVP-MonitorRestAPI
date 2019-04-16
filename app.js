@@ -5,6 +5,7 @@ var config = require('config');
 var dbHandler = require('./DBBackendHandler.js');
 var dispatchHandler = require('./DispatchHandler');
 var redisHandler = require('./RedisHandler.js');
+var campRedisHandler = require('./CampaignRedisOps.js');
 var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 var nodeUuid = require('node-uuid');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
@@ -2988,6 +2989,165 @@ server.post('/DVP/API/:version/MonitorRestAPI/BindResourceToVeeryAccount', autho
 });
 
 
+//Campaign Data
+
+server.get('/DVP/API/:version/MonitorRestAPI/Campaigns', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
+{
+    var reqId = nodeUuid.v1();
+    var emptyArr = [];
+    try
+    {
+        logger.debug('[DVP-MonitorRestAPI.GetCampaigns] - [%s] - HTTP Request Received', reqId);
+
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+        var opStatus = req.query.OperationalStatus;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
+
+        logger.debug('[DVP-MonitorRestAPI.GetCampaigns] - [%s] - Trying to get redis hash keys for company - Company : %d, Tenant : %d', reqId, companyId, tenantId);
+        var pattern = "RealTimeCampaign:" + tenantId + ":" + companyId + ":*";
+        campRedisHandler.GetKeys(reqId, pattern, function (err, hashIds)
+        {
+            if (err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "EXCEPTION", false, emptyArr);
+                logger.debug('[DVP-MonitorRestAPI.GetCampaigns] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+                campRedisHandler.MultipleHashHGetAll(reqId, hashIds, function (err, campaigns)
+                {
+                    if (err)
+                    {
+                        var jsonString = messageFormatter.FormatMessage(err, "EXCEPTION", false, emptyArr);
+                        logger.debug('[DVP-MonitorRestAPI.GetCampaigns] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                        res.end(jsonString);
+                    }
+                    else
+                    {
+                        var filtered = [];
+
+                        if(campaigns.length > 0)
+                        {
+                            campaigns.forEach(function(campTemp)
+                            {
+                                filtered.push(campTemp[1])
+                            })
+
+
+                        }
+                        
+                        if(opStatus)
+                        {
+                            filtered = filtered.filter((item)=>{
+                                return item.OperationalStatus === opStatus
+                            })
+                        }
+
+                        var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, filtered);
+                        logger.debug('[DVP-MonitorRestAPI.GetCampaigns] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                        res.end(jsonString);
+                    }
+
+                });
+            }
+
+        });
+    }
+    catch(ex)
+    {
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, emptyArr);
+        logger.debug('[DVP-MonitorRestAPI.GetCampaigns] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+server.get('/DVP/API/:version/MonitorRestAPI/Campaign/:campaignId/Calls', authorization({resource:"sysmonitoring", action:"read"}), function(req, res, next)
+{
+    var reqId = nodeUuid.v1();
+    var emptyArr = [];
+    try
+    {
+        logger.debug('[DVP-MonitorRestAPI.GetCampaignCalls] - [%s] - HTTP Request Received', reqId);
+
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+        var campId = req.params.campaignId;
+        var dialState = req.query.DialState;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
+
+        logger.debug('[DVP-MonitorRestAPI.GetCampaignCalls] - [%s] - Trying to get redis hash keys for company - Company : %d, Tenant : %d, campaignId: %d', reqId, companyId, tenantId, campId);
+        var pattern = "RealTimeCampaignCalls:" + tenantId + ":" + companyId + ":" + campId + ":*";
+        campRedisHandler.GetKeys(reqId, pattern, function (err, hashIds)
+        {
+            if (err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "EXCEPTION", false, emptyArr);
+                logger.debug('[DVP-MonitorRestAPI.GetCampaignCalls] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+                campRedisHandler.MultipleHashHGetAll(reqId, hashIds, function (err, campaignsCalls)
+                {
+                    if (err)
+                    {
+                        var jsonString = messageFormatter.FormatMessage(err, "EXCEPTION", false, emptyArr);
+                        logger.debug('[DVP-MonitorRestAPI.GetCampaignCalls] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                        res.end(jsonString);
+                    }
+                    else
+                    {
+                        var filtered = [];
+
+                        if(campaignsCalls.length > 0)
+                        {
+                            campaignsCalls.forEach(function(call)
+                            {
+                                filtered.push(call[1])
+                            })
+
+                        }
+
+                        if(dialState)
+                        {
+                            filtered = filtered.filter((item)=>{
+                                return item.DialState === dialState
+                            })
+                        }
+
+                        var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, filtered);
+                        logger.debug('[DVP-MonitorRestAPI.GetCampaignCalls] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                        res.end(jsonString);
+                    }
+
+                });
+            }
+
+        });
+    }
+    catch(ex)
+    {
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, emptyArr);
+        logger.debug('[DVP-MonitorRestAPI.GetCampaignCalls] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
 
 ////////////////////////////////////////
 

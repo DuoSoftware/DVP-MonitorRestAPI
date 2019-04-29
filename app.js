@@ -3182,7 +3182,7 @@ server.post('/DVP/API/:version/MonitorRestAPI/Caching', authorization({resource:
     return next();
 });
 
-server.post('/DVP/API/:version/EventTrigger/Zapier/Call/Subscribe', function(req, res, next)
+server.get('/DVP/API/:version/EventTrigger/Zapier/Call/Subscribe', function(req, res, next)
 {
     try
     {

@@ -3182,6 +3182,27 @@ server.post('/DVP/API/:version/MonitorRestAPI/Caching', authorization({resource:
     return next();
 });
 
+server.post('/DVP/API/:version/EventTrigger/Zapier/Call/Subscribe', function(req, res, next)
+{
+    try
+    {
+        let callEvtTestData = [{EventType:'CALL_CREATE', SessionId: 'fdsfdsfsdfsdfs'}];
+
+        logger.debug('[DVP-EventTriggerService.ZapierCallSubscribe] - SUCCESS');
+        res.end(JSON.stringify(callEvtTestData));
+
+    }
+    catch(ex)
+    {
+        var jsonString = messageFormatter.FormatMessage(ex, "ERROR OCCURRED", false, false);
+        logger.debug('[DVP-MonitorRestAPI.GetConferenceUsers] - API RESPONSE : %s', jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+});
+
+
 
 function Crossdomain(req,res,next){
 

@@ -3182,13 +3182,13 @@ server.post('/DVP/API/:version/MonitorRestAPI/Caching', authorization({resource:
     return next();
 });
 
-server.get('/DVP/API/:version/EventTrigger/Zapier/Call/Subscribe', authorization({resource:"cdr", action:"read"}), function(req, res, next)
+server.post('/DVP/API/:version/EventTrigger/Zapier/Call/Subscribe', authorization({resource:"cdr", action:"read"}), function(req, res, next)
 {
     try
     {
         let callEvtTestData = [{EventType:'CALL_CREATE', SessionId: 'fdsfdsfsdfsdfs'}];
 
-        logger.debug('[DVP-EventTriggerService.ZapierCallSubscribe] - SUCCESS');
+        logger.debug('[DVP-EventTriggerService.ZapierCallSubscribe] - SUCCESS - Data : %s', JSON.stringify(req.body));
         res.end(JSON.stringify(callEvtTestData));
 
     }

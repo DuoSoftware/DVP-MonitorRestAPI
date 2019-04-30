@@ -3186,16 +3186,36 @@ server.post('/DVP/API/:version/EventTrigger/Zapier/Call/Subscribe', authorizatio
 {
     try
     {
-        let callEvtTestData = [{EventType:'CALL_CREATE', SessionId: 'fdsfdsfsdfsdfs'}];
+        let subTestData = {id: 1, url: req.body.hookUrl};
 
         logger.debug('[DVP-EventTriggerService.ZapierCallSubscribe] - SUCCESS - Data : %s', JSON.stringify(req.body));
-        res.end(JSON.stringify(callEvtTestData));
+        res.end(JSON.stringify(subTestData));
 
     }
     catch(ex)
     {
         var jsonString = messageFormatter.FormatMessage(ex, "ERROR OCCURRED", false, false);
-        logger.debug('[DVP-MonitorRestAPI.GetConferenceUsers] - API RESPONSE : %s', jsonString);
+        logger.debug('[DVP-MonitorRestAPI.ZapierCallPerformList] - API RESPONSE : %s', jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+});
+
+server.post('/DVP/API/:version/EventTrigger/Zapier/Call/PerformList', authorization({resource:"cdr", action:"read"}), function(req, res, next)
+{
+    try
+    {
+        let subTestData = [{EventType: 'CALL_CREATE', SessionId: 'sddsdsdsd3s3sds'}];
+
+        logger.debug('[DVP-EventTriggerService.ZapierCallPerformList] - SUCCESS - Data : %s', JSON.stringify(req.body));
+        res.end(JSON.stringify(subTestData));
+
+    }
+    catch(ex)
+    {
+        var jsonString = messageFormatter.FormatMessage(ex, "ERROR OCCURRED", false, false);
+        logger.debug('[DVP-MonitorRestAPI.ZapierCallPerformList] - API RESPONSE : %s', jsonString);
         res.end(jsonString);
     }
 

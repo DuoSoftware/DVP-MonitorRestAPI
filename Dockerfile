@@ -8,11 +8,19 @@
 
 #EXPOSE 8823
 
-FROM node:9.9.0
-ARG VERSION_TAG
-RUN git clone -b $VERSION_TAG https://github.com/DuoSoftware/DVP-MonitorRestAPI.git /usr/local/src/monitorrestapi
-RUN cd /usr/local/src/monitorrestapi;
+# FROM node:9.9.0
+# ARG VERSION_TAG
+# RUN git clone -b $VERSION_TAG https://github.com/DuoSoftware/DVP-MonitorRestAPI.git /usr/local/src/monitorrestapi
+# RUN cd /usr/local/src/monitorrestapi;
+# WORKDIR /usr/local/src/monitorrestapi
+# RUN npm install
+# EXPOSE 8823
+# CMD [ "node", "/usr/local/src/monitorrestapi/app.js" ]
+
+FROM node:10-alpine
 WORKDIR /usr/local/src/monitorrestapi
+COPY package*.json ./
 RUN npm install
+COPY . .
 EXPOSE 8823
-CMD [ "node", "/usr/local/src/monitorrestapi/app.js" ]
+CMD [ "node", "app.js" ]

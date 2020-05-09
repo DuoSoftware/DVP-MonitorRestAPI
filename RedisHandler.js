@@ -292,3 +292,4 @@ module.exports.GetObject = GetObject;
 module.exports.GetKeys = GetKeys;
 module.exports.MGetObjects = MGetObjects;
 module.exports.MultipleHashHGetAll = MultipleHashHGetAll;
+module.exports.RedisClient = client;

@@ -8,6 +8,7 @@
     "config": "^1.13.0",
     "dvp-common": "1.1.0",
     "dvp-dbmodels": "3.0.3",
+    "dvp-healthcheck": "^1.0.6",
     "ioredis": "^3.1.1",
     "moment": "^2.17.1",
     "node-uuid": "^1.4.3",

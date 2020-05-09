@@ -13,6 +13,8 @@ var jwt = require('restify-jwt');
 var secret = require('dvp-common/Authentication/Secret.js');
 var authorization = require('dvp-common/Authentication/Authorization.js');
 var redisCacheHandler = require('dvp-common/CSConfigRedisCaching/RedisHandler.js');
+var dbModel = require('dvp-dbmodels');
+var healthcheck = require('dvp-healthcheck/DBHealthChecker');
 
 var hostIp = config.Host.Ip;
 var hostPort = config.Host.Port;
@@ -66,9 +68,10 @@ server.use(jwt({secret: secret.Secret,
             return req.params.Authorization;
         }
         return null;
-    }}));
+    }}).unless({path: ['/healthcheck']}));
 
-
+hc = new healthcheck(server, { pg: dbModel.SequelizeConn, redis: redisHandler.RedisClient });
+hc.Initiate();
 
 var CreateOnGoingCallList = function(reqId, setId, callback)
 {

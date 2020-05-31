@@ -2,8 +2,8 @@
  * Created by Rajinda on 2/26/2016.
  */
 
-var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
-var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
+var messageFormatter = require('dvp-common-lite/CommonMessageGenerator/ClientMessageJsonFormatter.js');
+var logger = require('dvp-common-lite/LogHandler/CommonLogHandler.js').logger;
 var config = require('config');
 var redisHandler = require('./RedisHandler.js');
 var dbmodel = require('dvp-dbmodels');

@@ -42,7 +42,12 @@ module.exports = {
 
 
     "Host":{
+        "Ip": "HOST_NAME",
         "Port":"HOST_MONITORRESTAPI_PORT",
         "Version":"HOST_VERSION"
+    },
+
+    "Freeswitch" : {
+        "password": "FS_PASSWORD"
     }
 };
